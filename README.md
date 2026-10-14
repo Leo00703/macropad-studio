@@ -145,8 +145,10 @@ node tools/profile-frames.js app/profiles/diagnostico-layer1.json   # profile â†
 - [ ] Verify the *repeat while held* option for media/mouse on real hardware (bridge-side repeat is tested in isolation only).
 - [ ] Faster recognition of rapid alternating presses with signed macros (measure latency; a low-latency mode is mentioned in the dev log).
 - [ ] English UI and English documentation (the UI strings and in-depth docs are currently Italian).
-- [ ] Desktop packaging (Electron shell; the bridge currently accepts only the `http://localhost:5173` origin).
-- [ ] Bridge for macOS / Linux (the live view needs per-device input events; programming itself is plain WebHID).
+- [ ] Native support for Windows, macOS and Linux: a bridge per OS (today the per-device input bridge is Windows-only; programming itself is plain WebHID) and desktop packaging (Electron shell; the bridge currently accepts only the `http://localhost:5173` origin).
+- [ ] Rename layers (presets): a name per layer, stored in the exported profile (the pad has no place to store it).
+- [ ] Better macro graphics on the keys: a larger icon set and cleaner text rendering for long shortcuts and typed text.
+- [ ] Ready-made macro library: common shortcuts per OS (e.g. Win+V clipboard, Win+D desktop, Alt+Tab switch app, Win+Shift+S screenshot; the macOS and Linux equivalents), each selectable as a single action with its own icon. Each OS only offers the shortcuts that exist on it.
 - [ ] Test on other devices of the same OEM family.
 
 ## Credits and prior art

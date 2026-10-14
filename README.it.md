@@ -141,8 +141,10 @@ node tools/profile-frames.js app/profiles/diagnostico-layer1.json   # profilo �
 - [ ] Verificare su hardware l'opzione *ripeti a tasto tenuto* per media/mouse (la ripetizione del ponte è provata solo in isolamento).
 - [ ] Riconoscimento più rapido di pressioni alternate veloci con macro firmate (misurare la latenza; una modalità a bassa latenza è citata nel diario).
 - [ ] Interfaccia e documentazione in inglese (testi dell'interfaccia e documenti di approfondimento sono oggi in italiano).
-- [ ] Pacchetto desktop (guscio Electron; oggi il ponte accetta solo l'origine `http://localhost:5173`).
-- [ ] Ponte per macOS / Linux (la vista live richiede eventi per dispositivo; la programmazione è semplice WebHID).
+- [ ] Supporto nativo per Windows, macOS e Linux: un ponte per ogni sistema (oggi il ponte per dispositivo è solo Windows; la programmazione è semplice WebHID) e pacchetto desktop (guscio Electron; oggi il ponte accetta solo l'origine `http://localhost:5173`).
+- [ ] Rinominare i layer (preset): un nome per layer, salvato nel profilo esportato (il pad non ha dove memorizzarlo).
+- [ ] Grafica migliore delle macro sui tasti: più icone e testo più curato per scorciatoie lunghe e testi digitati.
+- [ ] Libreria di macro già pronte: scorciatoie comuni per sistema (es. Win+V appunti, Win+D desktop, Alt+Tab cambio app, Win+Shift+S screenshot; gli equivalenti macOS e Linux), ognuna selezionabile come azione unica con la propria icona. Ogni sistema offre solo quelle compatibili.
 - [ ] Prove su altri dispositivi della stessa famiglia OEM.
 
 ## Crediti e lavori precedenti
