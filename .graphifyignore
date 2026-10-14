@@ -1,0 +1,17 @@
+# What does NOT go into the knowledge graph (same syntax as .gitignore)
+
+# vendor software (binaries) and images
+MacroPad/
+*.jpg
+*.png
+docs/images/
+
+# generated files and dependencies
+graphify-out/
+node_modules/
+dist/
+
+# agent tooling, licences and pure markup: no value for the graph
+.claude/
+app/fonts/
+app/live.html

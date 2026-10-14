@@ -1,0 +1,26 @@
+# Local tooling and generated knowledge graph (contains absolute local paths)
+graphify-out/
+.claude/
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Logs, captures and scratch files
+*.log
+errorLog.txt
+frames.json
+*.local.json
+
+# Vendor software and binaries must never be committed
+MacroPad/
+*.exe
+*.dll
+*.pdb
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

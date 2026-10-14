@@ -1,0 +1,37 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  protocol:
+    name: Protocol tests (Node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node app/test/protocol.test.js
+      - name: Profile → packets smoke test
+        run: node tools/profile-frames.js app/profiles/diagnostico-layer1.json > /dev/null
+
+  bridge:
+    name: Bridge compiles (Windows PowerShell 5.1)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse all PowerShell scripts
+        shell: powershell
+        run: |
+          $bad = 0
+          Get-ChildItem tools -Recurse -Filter *.ps1 | ForEach-Object {
+            $t = $null; $e = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$t, [ref]$e)
+            if (@($e).Count) { $bad++; $e | ForEach-Object { Write-Host "$($_.Extent.File):$($_.Extent.StartLineNumber) $($_.Message)" } }
+          }
+          if ($bad) { exit 1 }
+      - name: Compile the bridge (no device access)
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tools/PadBridge.ps1 -CompileOnly

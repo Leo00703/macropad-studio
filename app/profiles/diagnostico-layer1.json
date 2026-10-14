@@ -1,0 +1,40 @@
+{
+  "app": "macropad-studio",
+  "version": 1,
+  "profile": {
+    "name": "Diagnostico USB · layer 1",
+    "layers": [
+      {
+        "controls": {
+          "1": { "t": "keys", "steps": [{ "mod": 0, "key": 6 }, { "mod": 0, "key": 12 }, { "mod": 0, "key": 4 }, { "mod": 0, "key": 18 }], "delay": 50 },
+          "2": { "t": "keys", "steps": [{ "mod": 1, "key": 4 }], "delay": 0 },
+          "3": { "t": "keys", "steps": [{ "mod": 2, "key": 4 }], "delay": 0 },
+          "4": { "t": "media", "usage": 234 },
+          "5": { "t": "media", "usage": 233 },
+          "6": { "t": "media", "usage": 226 },
+          "7": { "t": "mouse", "buttons": 0, "wheel": 1, "mod": 0 },
+          "8": { "t": "mouse", "buttons": 0, "wheel": -1, "mod": 0 },
+          "9": { "t": "mouse", "buttons": 0, "wheel": 1, "mod": 1 },
+          "13": { "t": "media", "usage": 234 },
+          "14": { "t": "media", "usage": 226 },
+          "15": { "t": "media", "usage": 233 },
+          "16": { "t": "keys", "steps": [{ "mod": 0, "key": 75 }], "delay": 0 },
+          "17": { "t": "keys", "steps": [{ "mod": 0, "key": 74 }], "delay": 0 },
+          "18": { "t": "keys", "steps": [{ "mod": 0, "key": 78 }], "delay": 0 },
+          "19": { "t": "keys", "steps": [{ "mod": 0, "key": 80 }], "delay": 0 },
+          "20": { "t": "keys", "steps": [{ "mod": 0, "key": 44 }], "delay": 0 },
+          "21": { "t": "keys", "steps": [{ "mod": 0, "key": 79 }], "delay": 0 }
+        },
+        "led": null
+      },
+      { "controls": {}, "led": null },
+      { "controls": {}, "led": null }
+    ]
+  },
+  "layout": {
+    "keys": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "knobs": [[13, 14, 15], [16, 17, 18], [19, 20, 21]],
+    "confirmed": true,
+    "mouseAlt": false
+  }
+}

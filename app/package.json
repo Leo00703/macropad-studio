@@ -1,0 +1,11 @@
+{
+  "name": "macropad-studio",
+  "version": "0.1.0",
+  "description": "Live view and configurator for the 9-key + 3-knob macropad (USB 1189:8833), built on WebHID",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node test/protocol.test.js",
+    "serve": "python -m http.server 5173 --bind 127.0.0.1"
+  }
+}
