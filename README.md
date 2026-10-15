@@ -142,14 +142,14 @@ node tools/profile-frames.js app/profiles/diagnostico-layer1.json   # profile â†
 
 ## Roadmap
 
-- [ ] Verify the *repeat while held* option for media/mouse on real hardware (bridge-side repeat is tested in isolation only).
-- [ ] Faster recognition of rapid alternating presses with signed macros (measure latency; a low-latency mode is mentioned in the dev log).
-- [ ] English UI and English documentation (the UI strings and in-depth docs are currently Italian).
-- [ ] Native support for Windows, macOS and Linux: a bridge per OS (today the per-device input bridge is Windows-only; programming itself is plain WebHID) and desktop packaging (Electron shell; the bridge currently accepts only the `http://localhost:5173` origin).
-- [ ] Rename layers (presets): a name per layer, stored in the exported profile (the pad has no place to store it).
-- [ ] Better macro graphics on the keys: a larger icon set and cleaner text rendering for long shortcuts and typed text.
-- [ ] Ready-made macro library: common shortcuts per OS (e.g. Win+V clipboard, Win+D desktop, Alt+Tab switch app, Win+Shift+S screenshot; the macOS and Linux equivalents), each selectable as a single action with its own icon. Each OS only offers the shortcuts that exist on it.
-- [ ] Test on other devices of the same OEM family.
+- [ ] Verify the *repeat while held* option for media/mouse on real hardware (bridge-side repeat is tested in isolation only). ([#5](https://github.com/Leo00703/macropad-studio/issues/5))
+- [ ] Faster recognition of rapid alternating presses with signed macros (measure latency; a low-latency mode is mentioned in the dev log). ([#6](https://github.com/Leo00703/macropad-studio/issues/6))
+- [ ] English UI and English documentation (the UI strings and in-depth docs are currently Italian). ([#7](https://github.com/Leo00703/macropad-studio/issues/7))
+- [ ] Native support for Windows, macOS and Linux: a bridge per OS (today the per-device input bridge is Windows-only; programming itself is plain WebHID) and desktop packaging (Electron shell; the bridge currently accepts only the `http://localhost:5173` origin). ([#1](https://github.com/Leo00703/macropad-studio/issues/1))
+- [ ] Rename layers (presets): a name per layer, stored in the exported profile (the pad has no place to store it). ([#2](https://github.com/Leo00703/macropad-studio/issues/2))
+- [ ] Better macro graphics on the keys: a larger icon set and cleaner text rendering for long shortcuts and typed text. ([#3](https://github.com/Leo00703/macropad-studio/issues/3))
+- [ ] Ready-made macro library: common shortcuts per OS (e.g. Win+V clipboard, Win+D desktop, Alt+Tab switch app, Win+Shift+S screenshot; the macOS and Linux equivalents), each selectable as a single action with its own icon. Each OS only offers the shortcuts that exist on it. ([#4](https://github.com/Leo00703/macropad-studio/issues/4))
+- [ ] Test on other devices of the same OEM family. ([#8](https://github.com/Leo00703/macropad-studio/issues/8))
 
 ## Credits and prior art
 
