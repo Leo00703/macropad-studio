@@ -40,7 +40,9 @@ $('#diagBtn').addEventListener('click', () => toggleDiag($('#diag').hidden));
 $('#rawCopy').addEventListener('click', () => {
   const text = rawLog.slice().reverse().join('\n');
   const b = $('#rawCopy');
-  try { navigator.clipboard.writeText(text); b.textContent = 'Copiato'; } catch (_) { b.textContent = 'Non riuscito'; }
+  // writeText restituisce una promessa: l'esito (anche un rifiuto del browser) si legge quando arriva
+  Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(text))
+    .then(() => { b.textContent = navigator.clipboard ? 'Copiato' : 'Non riuscito'; }, () => { b.textContent = 'Non riuscito'; });
   setTimeout(() => { b.textContent = 'Copia'; }, 1500);
 });
 
