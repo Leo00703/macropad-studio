@@ -434,3 +434,22 @@ Per il repository pubblico: software del produttore, foto del listing, backup `l
 strumenti di analisi in `tools/research/`; foto in `docs/images/`; il lanciatore è `start.cmd` nella radice. L'indirizzo BLE del pad non è più
 nel codice: si passa con `-BleAddress`/`-Address`, con `MACROPAD_BLE_ADDRESS` o si ricava dal nome `MINI_KEYBOARD`. `graphify-out/` e
 `.claude/` restano locali (`.gitignore`).
+
+### Qualità del codice con desloppify (31/10/2026)
+Ciclo di analisi (scansione, revisione soggettiva, correzioni, nuova scansione) su ramo `desloppify/code-health`. Risultati principali:
+
+* **Una sola copia della logica di protocollo.** Il blocco `HOSTED-BEGIN…END` duplicato in `live.js` è stato tolto: i moduli usano `MP`.
+  I test di parità sono diventati un test-guardia (nessun modulo ridefinisce funzioni del protocollo).
+* **`live.js` (2000 righe) → moduli ES** in `app/modules/`: `core/` (puro, senza DOM, provato con Node) e `ui/` (DOM); `live.js` è solo
+  il punto d'ingresso. Import ed export sono stati ricavati dal grafo delle dipendenze reale.
+* **Rete di sicurezza:** `app/test/browser.mjs` (Chrome headless, 29 passi con eventi simulati, clic e fogli, istantanea in
+  `browser.snapshot.json`) ha dato risultati identici prima e dopo lo spezzamento e ha subito trovato un import mancante.
+* **Errori espliciti:** niente `catch` vuoti (helper `storage`/`parseJSON`/`warnOnce`, motivo della mancata codifica mostrato all'invio);
+  `commit()` avvisa i moduli registrati con `onCommit`; ogni funzione ha la propria `init…` per gli ascoltatori della pagina.
+* **Opzioni obsolete tolte:** mouse a byte alternativi e "volume come tasti" (Windows scarta gli usage 0x7F–0x81).
+* **PowerShell:** un solo `lib/RawInput.cs` per il ponte e la cattura passiva, un solo `Resolve-PadBleAddress`, pulizie "al meglio" con
+  nome (`Quiet`), intervalli validati nei parametri, controlli sul file dei pacchetti, BOM UTF-8 (Windows PowerShell 5.1 mostrava male le accentate).
+* **Limite dello strumento:** su Windows lo scanner non risolve gli import relativi di JavaScript (chiavi relative con `/` contro percorsi
+  assoluti in `ts_build_dep_graph`): risultano "orfani" e "senza test" tutti i moduli, e la voce *Test health* resta bassa senza che il codice lo giustifichi.
+* **Aperti:** cicli fra i moduli `ui/` (17 moduli), stato condiviso scritto da molti moduli, `tsc --checkJs` in CI, test dell'automa di riconoscimento
+  dei tasti, parser Raw Input condiviso fra ponte e cattura (offset dei campi ancora duplicati), boilerplate WinRT degli script BLE.
