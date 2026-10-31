@@ -1,6 +1,6 @@
 /* diag.js — registro grezzo degli eventi e pannello di diagnostica. */
+import { MEDIA_NAME, vkName } from '../core/keymap.js';
 import { $, btn } from './dom.js';
-import { MEDIA_NAME, vkName } from './keymap.js';
 
 /* Registro degli eventi grezzi con intervalli: serve a tarare le soglie sul pad reale. */
 export const rawLog = [];

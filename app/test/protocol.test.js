@@ -323,10 +323,10 @@ test('hold: un controllo con scelta esplicita non occupa il posto "nativo" del g
 });
 
 test('vista live: i moduli usano il protocollo, nessuna copia della logica', () => {
-  const dir = path.join(__dirname, '..', 'modules');
-  const code = fs.readdirSync(dir).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : e.name.endsWith('.js') ? [path.join(dir, e.name)] : []));
+  const code = walk(path.join(__dirname, '..', 'modules')).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
   for (const name of ['hostedControls', 'signPlan', 'sensorUsage', 'repeatOf', 'hostActionOf'])
-    assert(!new RegExp('(function|const)\s+' + name + '\b').test(code), name + ' è duplicata nei moduli: usare MP.' + name);
+    assert(!new RegExp('(function|const)\\s+' + name + '\\b').test(code), name + ' è duplicata nei moduli: usare MP.' + name);
 });
 
 console.log('\n' + passed + ' test superati' + (process.exitCode ? ' — CI SONO FALLIMENTI' : ''));

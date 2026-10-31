@@ -7,7 +7,7 @@ Jieli SoC). UI language, code comments and in-depth docs are **Italian**; the RE
 | Path | Contents |
 |---|---|
 | `app/live.html`, `app/live.css`, `app/live.js` | page, styles and the entry point (loads `modules/main.js`) |
-| `app/modules/` | the app as ES modules: `state`, `dom`, `pad`, `recognition`, `editor`, `send`, `leds`, `settings`, `inspector`, `bridge`… `main.js` wires the page events. Pure (DOM-free) ones: `signatures`, `matching`, `frames`, `keymap`, `icon-map` |
+| `app/modules/` | the app as ES modules. `core/` is pure and DOM-free (`mp`, `state`, `keymap`, `icon-map`, `signatures`, `matching`, `frames`, `geometry`) and must never import `ui/`; `ui/` has the DOM code (`pad`, `recognition`, `editor`, `inspector`, `send`, `leds`, `settings`, `bridge`…); `main.js` wires the page events. After moving code between modules, imports are easy to get wrong: reload the page with `?debug` and watch the console |
 | `app/protocol.js` | protocol (pure functions → `globalThis.MP`): packets, automatic signing, "sensor" identity, host-executed actions |
 | `app/test/` | `protocol.test.js` (protocol, plus a guard that the modules keep no copy of protocol logic) and `modules.test.mjs` (pure modules); run both with `npm test` in `app/` |
 | `tools/PadBridge.ps1` | local bridge: pad-only Raw Input → SSE on `127.0.0.1:5174`, runs "host" actions, USB/wireless status |

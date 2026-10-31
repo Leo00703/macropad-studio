@@ -1,7 +1,7 @@
 /* press.js — stati di pressione e rotazione dei controlli. */
+import { ctrl, knobAngle, state } from '../core/state.js';
 import { MIN_SHOW, isTurn } from './labels.js';
 import { ripple } from './pad.js';
-import { ctrl, knobAngle, state } from './state.js';
 
 const live = {};        // canale → { ids:Set, since }   (un canale = una sorgente: tastiera, media, rotella…)
 /* Le classi "premuto" si DERIVANO dai canali attivi a ogni cambio: nessun controllo può restare bloccato.

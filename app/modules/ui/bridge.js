@@ -1,12 +1,12 @@
 /* bridge.js — ponte locale (eventi, stato del collegamento, mappa delle azioni eseguite dal PC) e WebHID. */
+import { CODE2VK, MEDIA_KEY, sensorUsage } from '../core/keymap.js';
+import { BRIDGE, state } from '../core/state.js';
 import { $, parseJSON } from './dom.js';
 import { editorState } from './editor.js';
-import { CODE2VK, MEDIA_KEY, sensorUsage } from './keymap.js';
 import { dupGroups, shownLayer } from './labels.js';
 import { keyEvent, mediaEvent, onEvent } from './recognition.js';
 import { SEND } from './send.js';
 import { renderSheets } from './sheets.js';
-import { BRIDGE, state } from './state.js';
 import { paintSendChip } from './store.js';
 import { recents, renderRecents } from './tags.js';
 

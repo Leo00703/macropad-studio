@@ -1,6 +1,6 @@
 /* icons.js — costruzione degli elementi SVG dei simboli (DOM). */
+import { ICONS } from '../core/icon-map.js';
 import { el, h } from './dom.js';
-import { ICONS } from './icon-map.js';
 
 /* icona SVG a partire da un elenco di forme [tag, attributi]: l'unico modo in cui si costruisce SVG (niente markup in stringhe) */
 export const svgIcon = (shapes) => h('svg', { viewBox: '0 0 24 24', focusable: 'false' }, shapes.map(([tag, attrs]) => h(tag, attrs)));

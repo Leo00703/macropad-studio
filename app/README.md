@@ -39,7 +39,7 @@ controlli. Si carica da **Impostazioni → Importa**.
 
 * `live.html`, `live.css` — struttura e stili della pagina.
 * `live.js` — punto d'ingresso: controlla che `protocol.js` ci sia e carica `modules/main.js`.
-* `modules/` — l'applicazione, in moduli ES: `pad` (disegno), `recognition` (riconoscimento degli eventi), `editor`, `inspector`, `send` (WebHID), `leds`, `settings`, `bridge`, `state`… `main.js` collega gli eventi della pagina. I moduli senza DOM (`signatures`, `matching`, `frames`, `keymap`, `icon-map`) si provano con Node.
+* `modules/` — l'applicazione, in moduli ES. `core/` è puro e senza DOM (`mp`, `state`, `keymap`, `icon-map`, `signatures`, `matching`, `frames`, `geometry`) e non importa mai `ui/`; si prova con Node. `ui/` contiene il codice che usa il DOM: `pad` (disegno), `recognition` (riconoscimento degli eventi), `editor`, `inspector`, `send` (WebHID), `leds`, `settings`, `bridge`… `main.js` collega gli eventi della pagina. Con `live.html?debug` la pagina espone `window.__live` per la diagnostica.
 * `protocol.js` — protocollo: codifica dei pacchetti, firma automatica, identità "sensore", azioni eseguite dal PC.
 * `fonts/` — Google Sans (variabile) con la sua licenza OFL.
 * `profiles/` — profilo di prova.

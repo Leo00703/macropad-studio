@@ -5,11 +5,11 @@ import { createRequire } from 'node:module';
 
 createRequire(import.meta.url)('../protocol.js');            // espone il globale MP, come fa live.html
 
-const { deriveSignatures, summarize } = await import('../modules/signatures.js');
-const { matchKeySignatures, chooseLayer, hitsInLayer } = await import('../modules/matching.js');
-const { frameHexMap, pendingKeys, UNENCODABLE } = await import('../modules/frames.js');
-const { iconFor } = await import('../modules/icon-map.js');
-const { hidMask, modBit, vkName } = await import('../modules/keymap.js');
+const { deriveSignatures, summarize } = await import('../modules/core/signatures.js');
+const { matchKeySignatures, chooseLayer, hitsInLayer } = await import('../modules/core/matching.js');
+const { frameHexMap, pendingKeys, UNENCODABLE } = await import('../modules/core/frames.js');
+const { iconFor } = await import('../modules/core/icon-map.js');
+const { hidMask, modBit, vkName } = await import('../modules/core/keymap.js');
 
 let passed = 0;
 function test(name, fn) {

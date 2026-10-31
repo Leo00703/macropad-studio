@@ -1,11 +1,11 @@
 /* settings.js — impostazioni, esportazione e importazione del profilo. */
+import { MP } from '../core/mp.js';
+import { state } from '../core/state.js';
 import { $, btn, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
 import { section } from './inspector.js';
-import { MP } from './mp.js';
 import { buildPad } from './pad.js';
 import { anchorSheet, closeBtn, fillSheet, hideSheets } from './sheets.js';
-import { state } from './state.js';
 import { allIds, commit, encOpts, ensureStore } from './store.js';
 
 /* — impostazioni e profilo — */

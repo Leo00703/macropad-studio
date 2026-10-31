@@ -1,13 +1,13 @@
 /* editor.js — editor dell'azione di un controllo (tastiera, media, mouse, firma, tenuto premuto). */
+import { MP } from '../core/mp.js';
+import { state } from '../core/state.js';
 import { btn, el } from './dom.js';
 import { dropdown } from './dropdown.js';
 import { TYPE_ICONS, svgIcon } from './icons.js';
 import { card, placeInspector, renderInspector, section, select } from './inspector.js';
 import { paintLabels, shownLayer } from './labels.js';
-import { MP } from './mp.js';
 import { pick } from './recognition.js';
 import { SEND, framesFor, openSend } from './send.js';
-import { state } from './state.js';
 import { commit, encOpts, ensureStore, layerControls } from './store.js';
 
 /* ---------- editor nella vista live ----------

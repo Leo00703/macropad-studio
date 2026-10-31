@@ -1,4 +1,5 @@
 /* inspector.js — scheda ancorata al controllo selezionato. */
+import { ctrl, knobEl, state } from '../core/state.js';
 import { $, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
 import { editorState, enterEdit, leaveEdit, renderEditor, stopRec } from './editor.js';
@@ -6,7 +7,6 @@ import { iconEl } from './icons.js';
 import { controlName, dupGroups, iconNameFor, isUniqueEvent, kindFor, labelFor, shownLayer } from './labels.js';
 import { hotOf } from './pad.js';
 import { press, release, rotate } from './press.js';
-import { ctrl, knobEl, state } from './state.js';
 
 /* ---------- ispettore ancorato al controllo ---------- */
 export const card = $('#inspector');

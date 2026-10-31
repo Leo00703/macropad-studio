@@ -1,8 +1,8 @@
 /* profile.js — profilo → firme riconoscibili, riepilogo delle azioni, colore LED del layer. */
+import { LED_CSS, LED_DEFAULT, LED_NAME } from '../core/geometry.js';
+import { deriveSignatures } from '../core/signatures.js';
+import { DEFAULT_LAYOUT, STORE, state } from '../core/state.js';
 import { storage } from './dom.js';
-import { LED_CSS, LED_DEFAULT, LED_NAME } from './geometry.js';
-import { deriveSignatures } from './signatures.js';
-import { DEFAULT_LAYOUT, STORE, state } from './state.js';
 
 /* ---------- profilo → firme riconoscibili ---------- */
 export function load() {

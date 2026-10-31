@@ -1,11 +1,11 @@
 /* recognition.js — riconoscimento degli eventi del pad (tasti, media, rotella, pulsanti). */
+import { MEDIA_NAME, isSigVk, modBit, modLabel, vkName } from '../core/keymap.js';
+import { chooseLayer, hitsInLayer, matchKeySignatures } from '../core/matching.js';
+import { ctrl, state } from '../core/state.js';
 import { paintLink } from './bridge.js';
 import { trace } from './diag.js';
-import { MEDIA_NAME, isSigVk, modBit, modLabel, vkName } from './keymap.js';
 import { isTurn, setDetected, shownLayer } from './labels.js';
-import { chooseLayer, hitsInLayer, matchKeySignatures } from './matching.js';
 import { clearChannel, press, release } from './press.js';
-import { ctrl, state } from './state.js';
 import { note, showTags } from './tags.js';
 
 /* ---------- riconoscimento degli eventi ---------- */

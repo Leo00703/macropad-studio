@@ -1,21 +1,21 @@
 /* main.js — cablaggio: registra gli eventi della pagina (nell'ordine originale) e avvia l'app. */
-import { connectBridge, pageKey, pushHostmap, watchHid } from './bridge.js';
-import { rawLog, toggleDiag } from './diag.js';
-import { $ } from './dom.js';
-import { closeDropdowns, ddOpen } from './dropdown.js';
-import { editorState, recKey } from './editor.js';
-import { Bg, Glass } from './effects.js';
-import { card, placeInspector, select } from './inspector.js';
-import { hostedControls, sensorUsage } from './keymap.js';
-import { paintLabels } from './labels.js';
-import { openLeds } from './leds.js';
-import { buildPad, fitGrain } from './pad.js';
-import { load } from './profile.js';
-import { onEvent, wheelEvent } from './recognition.js';
-import { openSend } from './send.js';
-import { openSettings } from './settings.js';
-import { STORE, ctrl, state } from './state.js';
-import { onCommit, updatePending } from './store.js';
+import { hostedControls, sensorUsage } from './core/keymap.js';
+import { STORE, ctrl, state } from './core/state.js';
+import { connectBridge, pageKey, pushHostmap, watchHid } from './ui/bridge.js';
+import { rawLog, toggleDiag } from './ui/diag.js';
+import { $ } from './ui/dom.js';
+import { closeDropdowns, ddOpen } from './ui/dropdown.js';
+import { editorState, recKey } from './ui/editor.js';
+import { Bg, Glass } from './ui/effects.js';
+import { card, placeInspector, select } from './ui/inspector.js';
+import { paintLabels } from './ui/labels.js';
+import { openLeds } from './ui/leds.js';
+import { buildPad, fitGrain } from './ui/pad.js';
+import { load } from './ui/profile.js';
+import { onEvent, wheelEvent } from './ui/recognition.js';
+import { openSend } from './ui/send.js';
+import { openSettings } from './ui/settings.js';
+import { onCommit, updatePending } from './ui/store.js';
 
 window.addEventListener('keydown', (e) => { if (editorState.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, true); } }, true);
 window.addEventListener('keyup', (e) => { if (editorState.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, false); } }, true);

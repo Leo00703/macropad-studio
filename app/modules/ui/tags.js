@@ -1,8 +1,8 @@
 /* tags.js — etichette sul pad e riga dell'ultima azione. */
+import { ctrl, state } from '../core/state.js';
 import { $, el } from './dom.js';
 import { controlName, labelFor } from './labels.js';
 import { hotOf } from './pad.js';
-import { ctrl, state } from './state.js';
 
 /* ---------- etichette sul pad e riga dell'ultima azione ---------- */
 const tagEls = new Map();

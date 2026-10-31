@@ -1,12 +1,12 @@
 /* labels.js — etichette dei controlli, layer mostrato e rilevamento dei duplicati. */
+import { ICONS } from '../core/icon-map.js';
+import { KIND_NAME } from '../core/signatures.js';
+import { ctrl, knobEl, state } from '../core/state.js';
 import { chips } from './bridge.js';
 import { $, h } from './dom.js';
 import { Bg } from './effects.js';
-import { ICONS } from './icon-map.js';
 import { renderInspector } from './inspector.js';
 import { ledInfo } from './profile.js';
-import { KIND_NAME } from './signatures.js';
-import { ctrl, knobEl, state } from './state.js';
 
 /* ---------- etichette e layer ---------- */
 export const shownLayer = () => (state.layerMode === 'auto' ? state.detected : state.layerMode);

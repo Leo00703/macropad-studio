@@ -1,4 +1,5 @@
 /* leds.js — pannello dei LED per layer. */
+import { state } from '../core/state.js';
 import { linkState } from './bridge.js';
 import { $, btn, el } from './dom.js';
 import { closeDropdowns, dropdown } from './dropdown.js';
@@ -7,7 +8,6 @@ import { section } from './inspector.js';
 import { shownLayer } from './labels.js';
 import { SEND, runSend } from './send.js';
 import { anchorSheet, closeBtn, fillSheet, hideSheets, progressBar } from './sheets.js';
-import { state } from './state.js';
 import { commit, ensureStore } from './store.js';
 
 /* — LED — */

@@ -1,9 +1,9 @@
 /* store.js — profilo in memoria, codifica dei pacchetti, confronto con quanto inviato al pad. */
+import { encodeOptions, frameHexMap, pendingKeys } from '../core/frames.js';
+import { SENT_KEY, STORE, state } from '../core/state.js';
 import { $, storage } from './dom.js';
-import { encodeOptions, frameHexMap, pendingKeys } from './frames.js';
 import { SEND } from './send.js';
 import { renderSheets } from './sheets.js';
-import { SENT_KEY, STORE, state } from './state.js';
 
 export function ensureStore() {
   if (state.store) return state.store;

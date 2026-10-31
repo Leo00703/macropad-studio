@@ -1,10 +1,10 @@
 /* pad.js — disegno del pad (SVG) e animazione dei controlli. */
+import { KEY_X, KEY_Y, KNOBS, OUTLINE, SCREWS } from '../core/geometry.js';
+import { ctrl, knobEl, state } from '../core/state.js';
 import { $, h } from './dom.js';
 import { Bg, Tex } from './effects.js';
-import { KEY_X, KEY_Y, KNOBS, OUTLINE, SCREWS } from './geometry.js';
 import { attachInteraction } from './inspector.js';
 import { paintLabels } from './labels.js';
-import { ctrl, knobEl, state } from './state.js';
 
 export function hotOf(c) { return c.el.querySelector(c.kind === 'knob' ? '.n-hot' : '.k-face'); }
 export function ripple(c, s) {
