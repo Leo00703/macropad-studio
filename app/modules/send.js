@@ -3,7 +3,8 @@ import { chips, linkState } from './bridge.js';
 import { $, btn, el, sleep } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
 import { UNENCODABLE } from './frames.js';
-import { NAME } from './labels.js';
+import { controlName } from './labels.js';
+import { MP } from './mp.js';
 import { anchorSheet, closeBtn, dotEl, fillSheet, hideSheets, progressBar, renderSheets } from './sheets.js';
 import { state } from './state.js';
 import { currentFrameHexMap, encOpts, encodeErrors, readSent, updatePending, writeSent } from './store.js';
@@ -21,11 +22,11 @@ async function hidConnect() {
   SEND.dev = dev;
   return dev;
 }
-/* pacchetti di un controllo come li invia il configuratore: "azzera" + azione (il firmware conserva il tipo vecchio) */
+/* pacchetti di un controllo come li scrive l'editor: "azzera" + azione (il firmware conserva il tipo vecchio) */
 export function framesFor(L, id) {
   const a = state.store.profile.layers[L - 1].controls[id] || null;
   const list = MP.encodeActionFrames(id, L, a, encOpts());
-  const name = NAME(id) + ' · L' + L;
+  const name = controlName(id) + ' · L' + L;
   const out = [];
   if (!(a && a.t === 'clear')) out.push({ label: name + ' · azzera', bytes: MP.clear(id, L) });
   list.forEach((b, i) => out.push({ label: name + (list.length > 1 ? (i === 0 ? ' · tasti' : ' · pausa') : ''), bytes: b }));
@@ -34,7 +35,7 @@ export function framesFor(L, id) {
 const pendingName = (k) => {
   if (k.startsWith('led:')) return 'LED · Layer ' + k.slice(4);
   const [L, id] = k.split(':').map(Number);
-  return NAME(id) + ' · L' + L;
+  return controlName(id) + ' · L' + L;
 };
 async function sendKeys(keys) {
   const cur = currentFrameHexMap();

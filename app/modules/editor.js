@@ -4,12 +4,13 @@ import { dropdown } from './dropdown.js';
 import { TYPE_ICONS, svgIcon } from './icons.js';
 import { card, placeInspector, renderInspector, section, select } from './inspector.js';
 import { paintLabels, shownLayer } from './labels.js';
+import { MP } from './mp.js';
 import { pick } from './recognition.js';
 import { SEND, framesFor, openSend } from './send.js';
 import { state } from './state.js';
 import { commit, encOpts, ensureStore, layerControls } from './store.js';
 
-/* ---------- configuratore nella vista live ----------
+/* ---------- editor nella vista live ----------
    Si modifica l'azione del controllo selezionato nel layer mostrato; il profilo è salvato nel browser (localStorage)
    e le modifiche si inviano al pad via WebHID (USB) solo dopo conferma esplicita.
    Il modulo di protocollo (MP) è in protocol.js: funzioni pure, le stesse usate dai test e da tools/profile-frames.js. */

@@ -3,7 +3,10 @@
    Forma: IIFE con dichiarazioni `function` (leggibili anche dagli strumenti AST) che espone il modulo come globalThis.MP. */
 (function (root) {
   'use strict';
-  /* Forme dei dati (solo documentazione, nessun controllo a runtime)
+  /* Convenzione sugli errori: argomenti non validi (id, layer, ritardo, testo) lanciano RangeError; un'azione assente o di tipo
+     sconosciuto non produce pacchetti (encodeAction → null, encodeActionFrames → []).
+
+     Forme dei dati (solo documentazione, nessun controllo a runtime)
      @typedef {{ mod?: number, key?: number }} Step               una pressione: bitmask dei modificatori HID + usage tastiera
      @typedef {{ t: 'keys', steps: Step[], delay?: number, delayReset?: boolean, hold?: 'repeat'|'once', sign?: 'on'|'off' }} KeysAction
      @typedef {{ t: 'media', usage: number, hold?: 'repeat'|'once' }} MediaAction

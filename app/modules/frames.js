@@ -1,4 +1,5 @@
 /* frames.js — pacchetti da inviare al pad per un profilo e confronto con quanto già inviato. Funzioni pure: nessun DOM. */
+import { MP } from './mp.js';
 
 /* valore di un controllo che non si può codificare (es. macro troppo lunga); il motivo sta in `errors` */
 export const UNENCODABLE = '!non-codificabile';

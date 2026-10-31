@@ -77,4 +77,4 @@ updatePending(true);
 Glass.attach(card, 12, 18, 24);
 Glass.attach($('#diag'), 12, 16, 20);
 new ResizeObserver(() => { fitGrain(); Bg.size(); placeInspector(); }).observe($('#stage'));
-window.__live = { state, onEvent, ctrl, load, buildPad, paintLabels, select, hostedControls, sensorUsage };
+if (new URLSearchParams(location.search).has('debug')) window.__live = { state, onEvent, ctrl, load, buildPad, paintLabels, select, hostedControls, sensorUsage };

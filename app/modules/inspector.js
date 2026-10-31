@@ -3,7 +3,7 @@ import { $, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
 import { editorState, enterEdit, leaveEdit, renderEditor, stopRec } from './editor.js';
 import { iconEl } from './icons.js';
-import { NAME, dupGroups, iconNameFor, isUniqueEvent, kindFor, labelFor, shownLayer } from './labels.js';
+import { controlName, dupGroups, iconNameFor, isUniqueEvent, kindFor, labelFor, shownLayer } from './labels.js';
 import { hotOf } from './pad.js';
 import { press, release, rotate } from './press.js';
 import { ctrl, knobEl, state } from './state.js';
@@ -72,15 +72,15 @@ function identityOf(ids, L) {
   if (here.every((x) => x.signed)) return { label: 'Univoco', hint: 'Riconosciuto in modo univoco (controllo + layer) grazie alla firma F13–F21.' };
   if (uniqueAll) return { label: 'Univoco · azione unica', hint: 'La sua azione non compare altrove nel profilo: l\'evento identifica controllo e layer, e tenuto premuto si ripete.' };
   if (here.some((x) => x.signed)) return { label: 'In parte univoco', hint: 'Riconosciuto in modo univoco (controllo + layer) grazie alla firma F13–F21.' };
-  return { label: 'Per azione', hint: 'Riconosciuto solo dall\'azione, che si ripete su altri controlli: si confonde. Lascia la firma su Automatica nel configuratore.' };
+  return { label: 'Per azione', hint: 'Riconosciuto solo dall\'azione, che si ripete su altri controlli: si confonde. Lascia la firma su Automatica nelle impostazioni.' };
 }
 /* avvisi sulle azioni duplicate che coinvolgono i controlli selezionati */
 function duplicateNotes(dups, ids) {
   const notes = [];
   for (const g of dups) {
     if (!ids.some((id) => g.ids.has(id))) continue;
-    const others = [...g.ids].filter((id) => !ids.includes(id)).map(NAME);
-    const list = others.length ? others : [...g.ids].map(NAME);
+    const others = [...g.ids].filter((id) => !ids.includes(id)).map(controlName);
+    const list = others.length ? others : [...g.ids].map(controlName);
     notes.push(el('p', { class: 'note' }, el('b', {}, 'Azione duplicata'),
       (g.label || 'Questa azione') + ' è assegnata anche a ' + list.join(', ') + '. Il pad invia lo stesso messaggio, quindi la vista li accende insieme.'));
   }

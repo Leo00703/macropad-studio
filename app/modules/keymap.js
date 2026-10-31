@@ -1,4 +1,5 @@
 /* keymap.js — tabelle tasto ↔ codici, nomi dei tasti e modificatori. */
+import { MP } from './mp.js';
 
 /* ---------- tabelle ---------- */
 export const U2VK = {};
@@ -11,7 +12,7 @@ Object.assign(U2VK, { 0x28: 13, 0x29: 27, 0x2A: 8, 0x2B: 9, 0x2C: 32, 0x2D: 189,
   0x62: 96, 0x63: 110, 0x65: 93 });
 for (let i = 0; i < 12; i++) { U2VK[0x3A + i] = 112 + i; U2VK[0x68 + i] = 124 + i; }
 for (let i = 0; i < 9; i++) U2VK[0x59 + i] = 97 + i;
-/* firma univoca (stessa regola di MP.signatureKeys nel configuratore): n = (layer−1)·24 + (id−1), cifre in base 9 → F13+… */
+/* firma univoca (stessa regola di MP.signatureKeys): n = (layer−1)·24 + (id−1), cifre in base 9 → F13+… */
 export const sigSteps = (id, layer) => { const n = (layer - 1) * 24 + (id - 1); return [{ vk: 124 + Math.floor(n / 9), mods: 0 }, { vk: 124 + (n % 9), mods: 0 }]; };
 export const isSigVk = (vk) => vk >= 124 && vk <= 132;                    // F13–F21
 /* Logica del protocollo (piano di firma, azioni eseguite dal PC, identità "sensore"): esiste solo in protocol.js. */

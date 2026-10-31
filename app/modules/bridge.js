@@ -25,7 +25,7 @@ export function pushHostmap(force) {
   fetch(BRIDGE + '/hostmap', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body })
     .then((r) => (r.ok ? r.json() : null))
     .then((j) => { state.hostOk = !!(j && j.ok); chips(); })
-    .catch(() => { state.hostOk = false; chips(); });
+    .catch((err) => { warnOnce('mappa delle azioni dal PC non inviata al ponte', err); state.hostOk = false; chips(); });
 }
 /* — stato del collegamento — */
 const LINK_TEXT = {
@@ -57,7 +57,7 @@ export function watchHid() {
     try {
       const list = await navigator.hid.getDevices();
       state.hidSeen = list.some((d) => d.vendorId === 0x1189);
-    } catch (_) { state.hidSeen = false; }
+    } catch (err) { warnOnce('WebHID non disponibile', err); state.hidSeen = false; }
     paintLink();
   };
   navigator.hid.addEventListener('connect', check);
@@ -85,10 +85,10 @@ export function chips() {
   const sg = state.sigs.filter((x) => x.signed && !x.empty).length;
   cp.lastElementChild.textContent = n ? n + ' azioni' + (sg ? ' · ' + sg + ' firmate' : '') + (d ? ' · ' + d + (d === 1 ? ' duplicata' : ' duplicate') : '') : 'Nessun profilo';
   cp.title = n
-    ? 'Azioni riconoscibili nel profilo salvato dal configuratore.'
+    ? 'Azioni riconoscibili nel profilo salvato nel browser.'
       + (sg ? ' Le firmate (F13–F21) sono univoche per controllo e layer.' : '')
       + (d ? ' Alcune azioni identiche sono su più controlli e non si distinguono.' : '')
-    : 'Apri il configuratore e salva un profilo.';
+    : 'Modifica un controllo per creare il profilo.';
   $('#diagHelp').textContent = state.bridge
     ? 'Intervalli tra gli eventi e durata di ogni pressione, misurati dal ponte. Servono a tarare le soglie rotazione/pressione.'
     : 'Il ponte non è attivo: avvia start.cmd (o tools\\PadBridge.ps1) per vedere il pad anche in background.';
@@ -97,7 +97,7 @@ export function chips() {
 /* ---------- ponte e fallback dalla pagina ---------- */
 let es = null;
 export function connectBridge() {
-  try { es = new EventSource(BRIDGE + '/events'); } catch (_) { setTimeout(connectBridge, 4000); return; }
+  try { es = new EventSource(BRIDGE + '/events'); } catch (err) { warnOnce('EventSource non disponibile', err); setTimeout(connectBridge, 4000); return; }
   es.addEventListener('hello', (e) => {
     const d = parseJSON(e.data, 'messaggio hello del ponte illeggibile (ponte molto vecchio?)');
     state.bridge = true; state.precise = !!(d && d.precise); state.hostCap = !!(d && d.host);

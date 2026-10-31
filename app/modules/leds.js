@@ -22,14 +22,14 @@ const LED_MODES = [[0, 'Spento', 'Tutti i LED spenti.'],
   [5, 'Tutti bianchi', 'Tutti i LED accesi di bianco: il colore scelto non conta.'],
   [10, 'Andata e ritorno 1 → 4', 'Spenti; a ogni pressione, di qualunque tasto, i LED si accendono dal tasto 1 al 4 e poi tornano indietro fino al 1.'],
   [11, 'Tasto premuto, netto', 'Come “Tasto premuto”, ma il tasto si accende e si spegne di colpo, senza dissolvenza.']];
-const LEDE = { layer: null };
+const ledSheetState = { layer: null };
 const ledOf = (L) => {
   const led = state.store && state.store.profile.layers[L - 1].led;
   return led && typeof led.color === 'number' ? { color: led.color, mode: led.mode | 0, set: true } : { color: L === 1 ? 4 : 0, mode: 1, set: false };
 };
 export function openLeds() {
   ensureStore();
-  LEDE.layer = shownLayer();
+  ledSheetState.layer = shownLayer();
   SEND.msg = ''; SEND.err = false; SEND.done = false;
   hideSheets('#leds');
   anchorSheet($('#leds'), $('#ledCard'));
@@ -45,14 +45,14 @@ export function renderLeds() {
   const box = $('#leds');
   closeDropdowns();
   if (!state.store) { box.hidden = true; return; }
-  const L = LEDE.layer || shownLayer();
+  const L = ledSheetState.layer || shownLayer();
   const cur = ledOf(L);
   const key = 'led:' + L;
   const dirty = SEND.pending.includes(key);
   const st = linkState();
   const kids = [el('div', { class: 'sh' }, el('span', { class: 'micro' }, 'LED'), closeBtn(() => { box.hidden = true; }))];
   kids.push(el('h3', {}, 'Luci del macropad'));
-  kids.push(segBtns([[1, 'Layer 1'], [2, 'Layer 2'], [3, 'Layer 3']], (k) => k === L, (k) => { LEDE.layer = k; renderLeds(); }, 'Layer da modificare'));
+  kids.push(segBtns([[1, 'Layer 1'], [2, 'Layer 2'], [3, 'Layer 3']], (k) => k === L, (k) => { ledSheetState.layer = k; renderLeds(); }, 'Layer da modificare'));
   const sw = el('div', { class: 'swatches' + (cur.mode === 5 ? ' dim' : ''), role: 'group', 'aria-label': 'Colore' });
   LED_COLOR_LIST.forEach(([v, name, css]) => {
     const b = btn('', 'sw', () => setLedField(L, { color: v }), { 'aria-pressed': String(cur.color === v), title: name, 'aria-label': name });

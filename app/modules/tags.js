@@ -1,6 +1,6 @@
 /* tags.js — etichette sul pad e riga dell'ultima azione. */
 import { $, el } from './dom.js';
-import { NAME, labelFor } from './labels.js';
+import { controlName, labelFor } from './labels.js';
 import { hotOf } from './pad.js';
 import { ctrl, state } from './state.js';
 
@@ -50,7 +50,7 @@ export function renderRecents() {
 export function note(p, raw) {
   let title, sub;
   if (p && p.hits.length) {
-    const names = p.hits.map((x) => NAME(x.id));
+    const names = p.hits.map((x) => controlName(x.id));
     title = p.hits.length > 1 ? names.slice(0, 2).join(' oppure ') + (names.length > 2 ? ' …' : '') : names[0];
     sub = (p.sig && p.sig.label ? p.sig.label : (p.sig && p.sig.empty ? 'Senza azione' : '')) + ' · Layer ' + p.layer + (p.hits.length > 1 ? ' · stessa azione su più controlli' : '');
     showTags(p);

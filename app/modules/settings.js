@@ -2,6 +2,7 @@
 import { $, btn, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
 import { section } from './inspector.js';
+import { MP } from './mp.js';
 import { buildPad } from './pad.js';
 import { anchorSheet, closeBtn, fillSheet, hideSheets } from './sheets.js';
 import { state } from './state.js';

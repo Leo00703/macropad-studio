@@ -13,7 +13,7 @@ export const KNOBS = [
   { x: 1097, y: 1152, disc: 152, ring: 0, bezel: 184, sk: null, hl: -9, mark: { a: -90, r0: 88, r1: 146, w: 11 }, big: true },
 ];
 export const SCREWS = [[55, 53], [52, 750], [900, 800], [1242, 963]];
-// colori LED come nel configuratore (codice → css); di fabbrica: layer 1 verde, 2 e 3 bianchi (osservato)
+// colori LED (codice → css); di fabbrica: layer 1 verde, 2 e 3 bianchi (osservato)
 export const LED_CSS = { 0: '#e6ebf2', 1: '#ff3b3b', 2: '#ff9a2e', 3: '#ffe14a', 4: '#34d86b', 5: '#2ee6e6', 6: '#3b6bff', 7: '#b25cff' };
 export const LED_NAME = { 0: 'Bianco', 1: 'Rosso', 2: 'Arancio', 3: 'Giallo', 4: 'Verde', 5: 'Ciano', 6: 'Blu', 7: 'Viola' };
 export const LED_DEFAULT = ['#34d86b', '#dfe6f0', '#dfe6f0'];

@@ -14,7 +14,7 @@ export const iconNameFor = (id, L) => { const s = state.sigs.find((x) => x.layer
 export const labelFor = (id, L) => { const s = state.sigs.find((x) => x.layer === L && x.id === id); return s ? s.label : ''; };
 export const kindFor = (id, L) => { const s = state.sigs.find((x) => x.layer === L && x.id === id); return s ? (s.empty ? 'Senza azione' : KIND_NAME[s.kind]) : ''; };
 const slotName = (id) => 'Tasto ' + (state.layout.keys.indexOf(id) + 1);
-export const NAME = (id) => {
+export const controlName = (id) => {
   const c = ctrl.get(id);
   if (!c) return 'Controllo ' + id;
   if (c.kind === 'key') return slotName(id);
