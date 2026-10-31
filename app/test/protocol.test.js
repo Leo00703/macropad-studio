@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 
-const MP = new Function(fs.readFileSync(path.join(__dirname, '..', 'protocol.js'), 'utf8') + '\nreturn MP;')();
+const MP = require('../protocol.js');
 
 let passed = 0;
 function test(name, fn) {
@@ -97,21 +97,6 @@ test('mouse: rotella giù con Ctrl → 0xFF e modificatore 1', () => {
   const b = MP.mouse(1, 1, { wheel: -1, mod: 1 });
   assert.strictEqual(b[14], 0xFF); assert.strictEqual(b[15], 1);
 });
-test('mouse variante alternativa: rotella su → payload [0,0,0,1,0], count 2', () => {
-  const b = MP.mouse(1, 1, { wheel: 1 }, true);
-  assert.strictEqual(hexOf(b.slice(10), 5), '00 00 00 01 00');
-  assert.strictEqual(b[9], 2);
-});
-test('mouse variante alternativa: click sinistro in prima posizione, count 1', () => {
-  const b = MP.mouse(1, 1, { buttons: MP.MOUSE_BTN.LEFT }, true);
-  assert.deepStrictEqual([b[9], b[10]], [1, 1]);
-});
-test('encodeAction passa l\'opzione mouseAlt solo ai mouse', () => {
-  const m = { t: 'mouse', buttons: 0, wheel: 1, mod: 0 };
-  assert.notStrictEqual(MP.hex(MP.encodeAction(1, 1, m)), MP.hex(MP.encodeAction(1, 1, m, { mouseAlt: true })));
-  const k = { t: 'keys', steps: [{ mod: 0, key: 4 }], delay: 0 };
-  assert.strictEqual(MP.hex(MP.encodeAction(1, 1, k)), MP.hex(MP.encodeAction(1, 1, k, { mouseAlt: true })));
-});
 test('media: usage > 0xFF aggiunge il byte alto e count 2', () => {
   const b = MP.media(1, 1, 0x192);
   assert.deepStrictEqual([b[9], b[10], b[11], b[12]], [2, 0, 0x92, 0x01]);
@@ -187,14 +172,9 @@ test('firma: macro troppo lunga → errore esplicito; macro vuota non viene firm
   const empty = { t: 'keys', steps: [] };
   assert.strictEqual(MP.withSignature(1, 1, empty, { signature: true }), empty);
 });
-test("firma: media e mouse invariati; Volume come tasto solo con l'opzione", () => {
+test('firma: media e mouse (non eseguiti dal PC) restano invariati', () => {
   const vol = { t: 'media', usage: 0xEA };
   assert.strictEqual(MP.withSignature(4, 1, vol, { signature: true }), vol);
-  const asKey = MP.withSignature(4, 1, vol, { signature: true, volumeAsKey: true });
-  assert.strictEqual(asKey.t, 'keys');
-  assert.strictEqual(asKey.steps[2].key, 0x81);
-  const play = { t: 'media', usage: 0xCD };
-  assert.strictEqual(MP.withSignature(4, 1, play, { signature: true, volumeAsKey: true }), play);
   const mouse = { t: 'mouse', buttons: 0, wheel: 1, mod: 0 };
   assert.strictEqual(MP.withSignature(7, 1, mouse, { signature: true }), mouse);
 });
@@ -223,7 +203,6 @@ test('isSigned riflette cosa viene davvero firmato', () => {
   assert.strictEqual(MP.isSigned({ t: 'keys', steps: [{ mod: 0, key: 4 }] }, { signature: true }), true);
   assert.strictEqual(MP.isSigned({ t: 'keys', steps: [{ mod: 0, key: 4 }] }, { signature: false }), false);
   assert.strictEqual(MP.isSigned({ t: 'media', usage: 0xEA }, { signature: true }), false);
-  assert.strictEqual(MP.isSigned({ t: 'media', usage: 0xEA }, { signature: true, volumeAsKey: true }), true);
   assert.strictEqual(MP.isSigned({ t: 'mouse', wheel: 1 }, { signature: true }), false);
 });
 
@@ -268,26 +247,6 @@ test('host: il controllo eseguito dal PC invia SOLO la sua identità (usage cons
   assert.strictEqual(MP.isSigned(volDown, o, 4, 1), true);
   assert.strictEqual(MP.isSigned(volDown, o, 13, 1), false);
 });
-test('host: la logica della vista live coincide con quella del configuratore', () => {
-  const live = fs.readFileSync(path.join(__dirname, '..', 'live.js'), 'utf8');
-  const b = /\/\* HOSTED-BEGIN[\s\S]*?\*\/([\s\S]*?)\/\* HOSTED-END \*\//.exec(live);
-  assert(b, 'blocco HOSTED non trovato in live.js');
-  const liveHosted = new Function(b[1] + '\nreturn hostedControls;')();
-  const kinds = [volDown, volUp, mute, { t: 'media', usage: 0xCD }, { t: 'mouse', wheel: 1, mod: 0 }, { t: 'mouse', wheel: -1, mod: 2 },
-    { t: 'mouse', buttons: 4 }, { t: 'keys', steps: [{ mod: 0, key: 4 }] }, { t: 'media', usage: 0xE9, hold: 'repeat' },
-    { t: 'media', usage: 0xEA, hold: 'once' }, { t: 'mouse', wheel: 1, mod: 0, hold: 'repeat' }, null];
-  let seed = 12345;
-  const rnd = (n) => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed % n; };
-  const ids = [...LAYOUT.keys, ...LAYOUT.knobs.flat()];
-  for (let t = 0; t < 200; t++) {
-    const p = prof();
-    if (rnd(3) === 0) p.repeat = { delay: 100 + rnd(900), rate: 30 + rnd(200) };
-    p.layers.forEach((L) => ids.forEach((id) => { const a = kinds[rnd(kinds.length)]; if (a) L.controls[id] = a; }));
-    const a = MP.hostedControls(p, LAYOUT), c = liveHosted(p, LAYOUT);
-    assert.deepStrictEqual([...c.entries()].sort(), [...a.entries()].sort());
-  }
-});
-
 /* ---- piano di firma automatico ---- */
 const kA = { t: 'keys', steps: [{ mod: 0, key: 0x04 }] }, kB = { t: 'keys', steps: [{ mod: 0, key: 0x05 }] };
 const kAB = { t: 'keys', steps: [{ mod: 0, key: 0x04 }, { mod: 0, key: 0x05 }] };
@@ -325,27 +284,6 @@ test('piano: la macro viene firmata solo se nel piano; senza piano si firma semp
   assert.strictEqual(MP.isSigned(kA, o, 1, 1), false);
   assert.strictEqual(MP.isSigned(kA, o, 2, 1), true);
 });
-test('piano: la logica della vista live coincide con quella del configuratore', () => {
-  const live = fs.readFileSync(path.join(__dirname, '..', 'live.js'), 'utf8');
-  const b = /\/\* HOSTED-BEGIN[\s\S]*?\*\/([\s\S]*?)\/\* HOSTED-END \*\//.exec(live);
-  const livePlan = new Function(b[1] + '\nreturn signPlan;')();
-  const pool = [kA, kB, kAB, ctrlA, rctrlA, { t: 'keys', steps: [{ mod: 0, key: 0x4F }] }, { t: 'keys', steps: [{ mod: 2, key: 0x04 }, { mod: 0, key: 0x05 }] },
-    { t: 'keys', steps: kA.steps, sign: 'on' }, { t: 'keys', steps: kB.steps, sign: 'off' }, volDown, mute, { t: 'mouse', wheel: 1, mod: 0 },
-    { t: 'keys', steps: kA.steps, hold: 'once' }, { t: 'keys', steps: kB.steps, hold: 'repeat' }, { t: 'media', usage: 0xE9, hold: 'repeat' }, null];
-  const ids = [...LAYOUT.keys, ...LAYOUT.knobs.flat()];
-  let seed = 777;
-  const rnd = (n) => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed % n; };
-  for (let t = 0; t < 300; t++) {
-    const p = prof();
-    p.signAll = rnd(8) === 0;
-    if (rnd(3) === 0) p.repeat = { delay: 100 + rnd(900), rate: 30 + rnd(200) };
-    p.layers.forEach((L) => ids.forEach((id) => { const a = pool[rnd(pool.length)]; if (a) L.controls[id] = a; }));
-    const a = MP.signPlan(p, LAYOUT), c = livePlan(p, LAYOUT);
-    assert.deepStrictEqual([...c.keys].sort(), [...a.keys].sort());
-    assert.deepStrictEqual([...c.hosted.entries()].sort(), [...a.hosted.entries()].sort());
-  }
-});
-
 test('sensore: 72 usage riservati distinti, mai quelli che Windows interpreta; decodifica inversa', () => {
   const seen = new Set();
   const assigned = new Set([0x20, 0x21, 0x22, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
@@ -360,14 +298,6 @@ test('sensore: 72 usage riservati distinti, mai quelli che Windows interpreta; d
   assert.strictEqual(MP.decodeSensor(0xEA), null);
   assert.strictEqual(MP.SENSOR_USAGES.length, 72);
 });
-test('sensore: la tabella della vista live coincide con quella del configuratore', () => {
-  const live = fs.readFileSync(path.join(__dirname, '..', 'live.js'), 'utf8');
-  const b = /\/\* HOSTED-BEGIN[\s\S]*?\*\/([\s\S]*?)\/\* HOSTED-END \*\//.exec(live);
-  const sensor = new Function(b[1] + '\nreturn sensorUsage;')();
-  for (let layer = 1; layer <= 3; layer++) for (let id = 1; id <= 21; id++) assert.strictEqual(sensor(id, layer), MP.sensorUsage(id, layer));
-});
-
-/* ---- "tenuto premuto": ripeti / una volta ---- */
 test('hold: tasto singolo → "Una volta" firma (tocco), "Ripeti" resta normale anche se duplicato', () => {
   const once = { t: 'keys', steps: kA.steps, hold: 'once' }, rep = { t: 'keys', steps: kA.steps, hold: 'repeat' };
   const p = MP.signPlan(prof({ 1: once, 2: kB, 3: rep, 4: rep }), LAYOUT);
@@ -390,6 +320,13 @@ test('hold: un controllo con scelta esplicita non occupa il posto "nativo" del g
   const v = { t: 'media', usage: 0xE9, hold: 'once' };
   const h = MP.hostedControls(prof({ 4: v, 5: { t: 'media', usage: 0xE9 } }), LAYOUT);
   assert.deepStrictEqual([...h.keys()], ['1:4']);                 // il tasto 5 resta nativo
+});
+
+test('vista live: i moduli usano il protocollo, nessuna copia della logica', () => {
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : e.name.endsWith('.js') ? [path.join(dir, e.name)] : []));
+  const code = walk(path.join(__dirname, '..', 'modules')).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+  for (const name of ['hostedControls', 'signPlan', 'sensorUsage', 'repeatOf', 'hostActionOf'])
+    assert(!new RegExp('(function|const)\\s+' + name + '\\b').test(code), name + ' è duplicata nei moduli: usare MP.' + name);
 });
 
 console.log('\n' + passed + ' test superati' + (process.exitCode ? ' — CI SONO FALLIMENTI' : ''));

@@ -1,0 +1,585 @@
+{
+ "iniziale": {
+  "hash": "28cb4437e05b",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "In attesa\nPonte non attivo · solo eventi di questa pagina",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "ciao": {
+  "hash": "ef75294ffcad",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto A\nEvento non associato\nTasto I\nTasto 1\nCIAO · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "ctrl+a": {
+  "hash": "40cb69fcb464",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Tasto 2\nCtrl+A · Layer 1\nEvento non associato\nTasto O\nEvento non associato\nTasto A",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "volume-": {
+  "hash": "95a1b2778ff5",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Manopola 1 · ↺\nVolume − · Layer 1\nTasto 2\nCtrl+A · Layer 1\nEvento non associato\nTasto O",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "volume+ (impulso)": {
+  "hash": "da435b83fb6d",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Manopola 1 · ↻\nVolume + · Layer 1\nManopola 1 · ↺\nVolume − · Layer 1\nTasto 2\nCtrl+A · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "muto": {
+  "hash": "bbc9eebca326",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Tasto 6\nMuto · Layer 1\nManopola 1 · ↻\nVolume + · Layer 1\nManopola 1 · ↺\nVolume − · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "play (layer 2)": {
+  "hash": "6ebf731d1db3",
+  "state": {
+   "down": [],
+   "layer": 2,
+   "detected": 2,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Tasto 1\nPlay/Pausa · Layer 2\nTasto 6\nMuto · Layer 1\nManopola 1 · ↻\nVolume + · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "rotella su": {
+  "hash": "988f1aa4cbbd",
+  "state": {
+   "down": [
+    7
+   ],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Tasto 7\nRotella ↑ · Layer 1\nTasto 1\nPlay/Pausa · Layer 2\nTasto 6\nMuto · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "clic": {
+  "hash": "b9858bfe33e5",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nPulsante left\nTasto 7\nRotella ↑ · Layer 1\nTasto 1\nPlay/Pausa · Layer 2",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "pagina su, home, pagina giù": {
+  "hash": "842d53118af9",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Manopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1\nManopola 2 · ↺\nPag↑ · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "tasto non mappato": {
+  "hash": "842d53118af9",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Manopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1\nManopola 2 · ↺\nPag↑ · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "stato usb": {
+  "hash": "842d53118af9",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Manopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1\nManopola 2 · ↺\nPag↑ · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "stato ble": {
+  "hash": "e74c25f18f73",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "",
+   "sheets": "~~"
+  }
+ },
+ "selezione tasto 1": {
+  "hash": "3d807a3f99a8",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\nTastiera\nUnivoco · azione unica\n✕\nAZIONE ASSEGNATA\nCIAO\nTUTTI I LAYER\nLayer 1 · attivo\nCIAO\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "~~"
+  }
+ },
+ "modifica": {
+  "hash": "2b1021044a6b",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Pad aggiornato",
+   "inspector": "MODIFICA\nTasto 1\nLayer 1\nID 1\n✕\nCOSA FA\nTastiera\nMedia\nMouse\nNessuna\nDisattiva del tutto\nTASTI\nC\n✕\nI\n✕\nA\n✕\nO\n✕\n● Registra\nSvuota\nAggiungi un tasto\nCtrl\nMaiusc\nAlt\nWin\nScegli un tasto…\nOppure scrivi un testo\nAggiungi\nPausa dopo i tasti (ms)\nTENUTO PREMUTO\n\nLe macro con più tasti, o con una pausa, partono una volta sola per pressione.\n\nFIRMA\nAutomatica\nSempre\nMai\n\nNormale: segue la pressione (tenuto, si ripete) e la vista lo riconosce dall’azione.\n\nDettagli tecnici\nFine\nPad aggiornato",
+   "sheets": "~~"
+  }
+ },
+ "tipo media": {
+  "hash": "cd85f95eeeb0",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:1",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 6 firmate|Da inviare al pad · 3",
+   "inspector": "MODIFICA\nTasto 1\nLayer 1\nID 1\n✕\nCOSA FA\nTastiera\nMedia\nMouse\nNessuna\nDisattiva del tutto\nFUNZIONE\nPlay/Pausa\nTENUTO PREMUTO\nAutomatico\nRipeti\nUna volta\n\nIl pad invia una volta sola; un’eventuale ripetizione la gestisce Windows.\n\nDettagli tecnici\nFine\nPad aggiornato",
+   "sheets": "~~"
+  }
+ },
+ "tipo mouse": {
+  "hash": "ab30a2071c09",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 54,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|19 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "MODIFICA\nTasto 1\nLayer 1\nID 1\n✕\nCOSA FA\nTastiera\nMedia\nMouse\nNessuna\nDisattiva del tutto\nMOUSE\nClic\nSinistro\nCentrale\nDestro\nRotella\n↑ Su\n↓ Giù\nDettagli tecnici\nFine\nInvia al pad · 3",
+   "sheets": "~~"
+  }
+ },
+ "tipo tastiera": {
+  "hash": "9917a3a0aced",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "MODIFICA\nTasto 1\nLayer 1\nID 1\n✕\nCOSA FA\nTastiera\nMedia\nMouse\nNessuna\nDisattiva del tutto\nTASTI\nNessun tasto\n● Registra\nSvuota\nAggiungi un tasto\nCtrl\nMaiusc\nAlt\nWin\nScegli un tasto…\nOppure scrivi un testo\nAggiungi\nPausa dopo i tasti (ms)\nFIRMA\nAutomatica\nSempre\nMai\n\nNormale: segue la pressione (tenuto, si ripete) e la vista lo riconosce dall’azione.\n\nDettagli tecnici\nFine\nInvia al pad · 2",
+   "sheets": "~~"
+  }
+ },
+ "fine": {
+  "hash": "bc184bf2fa78",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "~~"
+  }
+ },
+ "impostazioni": {
+  "hash": "958278e2862b",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "~~IMPOSTAZIONI\n✕\nIdentificazione dei controlli\n\nCome la vista live capisce quale controllo e quale layer stai usando.\n\nFirma automatica\nAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.\nFirma tutti i controlli a tastiera\nPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.\nMedia e mouse duplicati eseguiti dal PC\nUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.\nControlli senza azione\nInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.\n\n19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).\n\nRIPETIZIONE A TASTO TENUTO\nAttesa (ms)\nIntervallo (ms)\n\nVale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.\n\nPROFILO\nEsporta\nImporta…\n\nIl profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "impostazioni chiusi": {
+  "hash": "958278e2862b",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "~~IMPOSTAZIONI\n✕\nIdentificazione dei controlli\n\nCome la vista live capisce quale controllo e quale layer stai usando.\n\nFirma automatica\nAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.\nFirma tutti i controlli a tastiera\nPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.\nMedia e mouse duplicati eseguiti dal PC\nUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.\nControlli senza azione\nInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.\n\n19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).\n\nRIPETIZIONE A TASTO TENUTO\nAttesa (ms)\nIntervallo (ms)\n\nVale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.\n\nPROFILO\nEsporta\nImporta…\n\nIl profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "led": {
+  "hash": "e431d511ad98",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "~LED\n✕\nLuci del macropad\nLayer 1\nLayer 2\nLayer 3\nCOLORE · VERDE\nEFFETTO\nFisso\n\nRetroilluminazione sempre accesa nel colore scelto.\n\nColore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.\n\nLED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "led chiusi": {
+  "hash": "e431d511ad98",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "~LED\n✕\nLuci del macropad\nLayer 1\nLayer 2\nLayer 3\nCOLORE · VERDE\nEFFETTO\nFisso\n\nRetroilluminazione sempre accesa nel colore scelto.\n\nColore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.\n\nLED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "invio": {
+  "hash": "dfa2592f0f66",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "INVIO AL MACROPAD\n✕\n2 modifiche da inviare\nTasto 1 · L1\nTasto 4 · L2\nCollega il cavo USB per programmare\nCollega e invia\nRiscrivi tutto\n\nI controlli indicati vengono sovrascritti sul dispositivo; il pad non si può rileggere, quindi il vecchio contenuto non si recupera.~LED✕Luci del macropadLayer 1Layer 2Layer 3Colore · VerdeEffettoFissoRetroilluminazione sempre accesa nel colore scelto.Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.LED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "invio chiusi": {
+  "hash": "dfa2592f0f66",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "INVIO AL MACROPAD\n✕\n2 modifiche da inviare\nTasto 1 · L1\nTasto 4 · L2\nCollega il cavo USB per programmare\nCollega e invia\nRiscrivi tutto\n\nI controlli indicati vengono sovrascritti sul dispositivo; il pad non si può rileggere, quindi il vecchio contenuto non si recupera.~LED✕Luci del macropadLayer 1Layer 2Layer 3Colore · VerdeEffettoFissoRetroilluminazione sempre accesa nel colore scelto.Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.LED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "layer Layer 2": {
+  "hash": "a46cc514cc96",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 2\nMedia\nUnivoco · azione unica\n✕\nAZIONE ASSEGNATA\nPlay/Pausa\nTUTTI I LAYER\nLayer 1\n—\nLayer 2 · attivo\nPlay/Pausa\nLayer 3\n—\nLAYER 2\nModifica",
+   "sheets": "INVIO AL MACROPAD\n✕\n2 modifiche da inviare\nTasto 1 · L1\nTasto 4 · L2\nCollega il cavo USB per programmare\nCollega e invia\nRiscrivi tutto\n\nI controlli indicati vengono sovrascritti sul dispositivo; il pad non si può rileggere, quindi il vecchio contenuto non si recupera.~LED✕Luci del macropadLayer 1Layer 2Layer 3Colore · VerdeEffettoFissoRetroilluminazione sempre accesa nel colore scelto.Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.LED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "layer Layer 3": {
+  "hash": "9706eff00515",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 3\nSenza azione\nUnivoco\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1\n—\nLayer 2\nPlay/Pausa\nLayer 3 · attivo\n—\nLAYER 3\nModifica",
+   "sheets": "INVIO AL MACROPAD\n✕\n2 modifiche da inviare\nTasto 1 · L1\nTasto 4 · L2\nCollega il cavo USB per programmare\nCollega e invia\nRiscrivi tutto\n\nI controlli indicati vengono sovrascritti sul dispositivo; il pad non si può rileggere, quindi il vecchio contenuto non si recupera.~LED✕Luci del macropadLayer 1Layer 2Layer 3Colore · VerdeEffettoFissoRetroilluminazione sempre accesa nel colore scelto.Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.LED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "layer Layer 1": {
+  "hash": "dfa2592f0f66",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "INVIO AL MACROPAD\n✕\n2 modifiche da inviare\nTasto 1 · L1\nTasto 4 · L2\nCollega il cavo USB per programmare\nCollega e invia\nRiscrivi tutto\n\nI controlli indicati vengono sovrascritti sul dispositivo; il pad non si può rileggere, quindi il vecchio contenuto non si recupera.~LED✕Luci del macropadLayer 1Layer 2Layer 3Colore · VerdeEffettoFissoRetroilluminazione sempre accesa nel colore scelto.Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.LED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ },
+ "layer Auto": {
+  "hash": "dfa2592f0f66",
+  "state": {
+   "down": [],
+   "layer": 1,
+   "detected": 1,
+   "sigs": 53,
+   "hosted": [
+    "1:14",
+    "1:4",
+    "1:5",
+    "2:2",
+    "2:3"
+   ],
+   "last": "Evento non associato\nTasto Q\nManopola 2 · ↻\nPag↓ · Layer 1\nManopola 2 · premi\nHome · Layer 1",
+   "chips": "Ponte non attivo|18 azioni · 5 firmate|Da inviare al pad · 2",
+   "inspector": "TASTO 01\nTasto 1\nLayer 1\n✕\nAZIONE ASSEGNATA\nNessuna azione\nTUTTI I LAYER\nLayer 1 · attivo\n—\nLayer 2\nPlay/Pausa\nLayer 3\n—\nLAYER 1\nModifica",
+   "sheets": "INVIO AL MACROPAD\n✕\n2 modifiche da inviare\nTasto 1 · L1\nTasto 4 · L2\nCollega il cavo USB per programmare\nCollega e invia\nRiscrivi tutto\n\nI controlli indicati vengono sovrascritti sul dispositivo; il pad non si può rileggere, quindi il vecchio contenuto non si recupera.~LED✕Luci del macropadLayer 1Layer 2Layer 3Colore · VerdeEffettoFissoRetroilluminazione sempre accesa nel colore scelto.Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.LED aggiornati~Impostazioni✕Identificazione dei controlliCome la vista live capisce quale controllo e quale layer stai usando.Firma automaticaAggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.Firma tutti i controlli a tastieraPiù sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.Media e mouse duplicati eseguiti dal PCUno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.Controlli senza azioneInviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.19 azioni: 7 normali (tenuta nativa) · 5 eseguite dal PC · 7 media/mouse unici · 35 senza azione (solo identità).Ripetizione a tasto tenutoAttesa (ms)Intervallo (ms)Vale per i controlli impostati su “Ripeti” che esegue il ponte (media e rotella). I tasti normali usano la ripetizione di Windows.ProfiloEsportaImporta…Il profilo è salvato in questo browser. Il pad non si può rileggere: un file esportato è l’unico backup."
+  }
+ }
+}

@@ -1,4 +1,4 @@
-# Ponte locale (Windows PowerShell 5.1): pubblica SOLO gli eventi del macropad su http://127.0.0.1:<porta>/events
+﻿# Ponte locale (Windows PowerShell 5.1): pubblica SOLO gli eventi del macropad su http://127.0.0.1:<porta>/events
 # (Server-Sent Events), così la pagina dell'app può mostrare la vista in tempo reale anche in background.
 #
 # SICUREZZA E PRIVACY
@@ -21,8 +21,8 @@
 #   la firma arriva da un evento del macropad. Per disattivare: togli "Media e mouse duplicati eseguiti dal PC" nel
 #   configuratore, oppure avvia il ponte con -NoHost.
 param(
-  [int]$Port = 5174,
-  [int]$Seconds = 0,
+  [ValidateRange(1024, 65535)][int]$Port = 5174,
+  [ValidateRange(0, 86400)][int]$Seconds = 0,
   [string[]]$PadMarkers = @('VID_1189'),
   [string]$BleAddress = '',
   [string[]]$AllowedOrigins = @('http://localhost:5173', 'http://127.0.0.1:5173'),
@@ -47,14 +47,12 @@ using System.Windows.Forms;
 public static class PadBridge
 {
     public static volatile bool Stopped = false;
-    public static int PadEvents = 0, OtherEvents = 0, ClientCount = 0;
+    public static int ClientCount = 0;
     static string[] markers = new string[0];
     static string[] origins = new string[0];
     static HttpListener listener;
     static readonly List<HttpListenerResponse> clients = new List<HttpListenerResponse>();
     static readonly object gate = new object();
-    static Dictionary<IntPtr, string> names = new Dictionary<IntPtr, string>();
-    static Dictionary<IntPtr, bool> isPad = new Dictionary<IntPtr, bool>();
     static int lastUsage = 0;
     // azioni eseguite dal PC: mappa firma (due tasti F13–F21) → azione, ricevuta dalla pagina con POST /hostmap
     class HostEntry { public int s0, s1, u; public string k; public int vk, d, m, b, repD, repR; }
@@ -73,123 +71,65 @@ public static class PadBridge
     static readonly Stopwatch clock = Stopwatch.StartNew();
 
     [StructLayout(LayoutKind.Sequential)]
-    struct RAWINPUTDEVICE { public ushort usUsagePage; public ushort usUsage; public uint dwFlags; public IntPtr hwndTarget; }
-    [StructLayout(LayoutKind.Sequential)]
-    struct RAWINPUTHEADER { public uint dwType; public uint dwSize; public IntPtr hDevice; public IntPtr wParam; }
-    [DllImport("user32.dll", SetLastError = true)]
-    static extern bool RegisterRawInputDevices(RAWINPUTDEVICE[] p, uint n, uint size);
-    [DllImport("user32.dll")]
-    static extern uint GetRawInputData(IntPtr hRawInput, uint cmd, IntPtr data, ref uint size, uint hdrSize);
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    static extern uint GetRawInputDeviceInfo(IntPtr dev, uint cmd, StringBuilder data, ref uint size);
-    [StructLayout(LayoutKind.Sequential)]
     struct RAWINPUTDEVICELIST { public IntPtr hDevice; public uint dwType; }
     [DllImport("user32.dll")]
     static extern uint GetRawInputDeviceList(IntPtr list, ref uint num, uint size);
+    // ScanLink legge i nomi solo per confrontarli con i marcatori, senza conservarli (RawInput.DeviceName li terrebbe in cache)
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    static extern uint GetRawInputDeviceInfo(IntPtr dev, uint cmd, StringBuilder data, ref uint size);
     public static int LinkUsb = -1, LinkBle = -1;          // -1 sconosciuto, 0 assente, 1 presente
-    [DllImport("user32.dll")]
-    static extern uint MsgWaitForMultipleObjects(uint count, IntPtr[] handles, bool waitAll, uint ms, uint mask);
-
-    class MsgWin : NativeWindow
-    {
-        public MsgWin() { CreateParams cp = new CreateParams(); cp.Parent = new IntPtr(-3); CreateHandle(cp); }
-        protected override void WndProc(ref Message m)
-        {
-            if (m.Msg == 0x00FF) PadBridge.OnInput(m.LParam);
-            base.WndProc(ref m);
-        }
-    }
-
     // millisecondi dall'avvio del ponte, con decimali (solo le differenze hanno significato)
     static string Now() { return clock.Elapsed.TotalMilliseconds.ToString("0.00", CultureInfo.InvariantCulture); }
 
-    static string DeviceName(IntPtr h)
-    {
-        string n;
-        if (names.TryGetValue(h, out n)) return n;
-        uint size = 0;
-        GetRawInputDeviceInfo(h, 0x20000007, null, ref size);
-        StringBuilder sb = new StringBuilder((int)Math.Max(size, 1));
-        GetRawInputDeviceInfo(h, 0x20000007, sb, ref size);
-        n = sb.ToString();
-        names[h] = n;
-        return n;
-    }
-
-    static bool IsPad(IntPtr h)
-    {
-        bool r;
-        if (isPad.TryGetValue(h, out r)) return r;
-        string n = DeviceName(h).ToUpperInvariant();
-        r = false;
-        foreach (string m in markers) { if (m.Length > 0 && n.Contains(m.ToUpperInvariant())) r = true; }
-        isPad[h] = r;
-        return r;
-    }
-
     static string Dev(IntPtr h)
     {
-        string p = DeviceName(h).ToUpperInvariant();
+        string p = RawInput.DeviceName(h).ToUpperInvariant();
         int i = p.IndexOf("COL");
         return i >= 0 ? p.Substring(i, Math.Min(5, p.Length - i)) : "";
     }
 
-    static void OnInput(IntPtr lParam)
+    // evento del macropad già filtrato da RawInput (gli altri dispositivi sono stati scartati senza leggerne il contenuto)
+    static void HandleInput(uint type, IntPtr dev, IntPtr buf, int off)
     {
-        uint size = 0, hdr = (uint)Marshal.SizeOf(typeof(RAWINPUTHEADER));
-        GetRawInputData(lParam, 0x10000003, IntPtr.Zero, ref size, hdr);
-        if (size == 0) return;
-        IntPtr buf = Marshal.AllocHGlobal((int)size);
-        try
+        string d = Dev(dev);
+        if (type == 1)
         {
-            if (GetRawInputData(lParam, 0x10000003, buf, ref size, hdr) != size) return;
-            uint type = (uint)Marshal.ReadInt32(buf, 0);
-            IntPtr dev = Marshal.ReadIntPtr(buf, 8);
-            // FILTRO DI PRIVACY: si decide prima di leggere qualsiasi contenuto
-            if (!IsPad(dev)) { OtherEvents++; return; }
-            PadEvents++;
-            int off = (int)hdr;
-            string d = Dev(dev);
-            if (type == 1)
+            ushort make = (ushort)Marshal.ReadInt16(buf, off + 0);
+            ushort flags = (ushort)Marshal.ReadInt16(buf, off + 2);
+            ushort vkey = (ushort)Marshal.ReadInt16(buf, off + 6);
+            bool kdown = (flags & 1) == 0;
+            Send("{\"type\":\"key\",\"vk\":" + vkey + ",\"sc\":" + make + ",\"down\":" + (kdown ? "true" : "false") + ",\"dev\":\"" + d + "\",\"t\":" + Now() + "}");
+            if (kdown) HostKey(vkey);
+        }
+        else if (type == 0)
+        {
+            ushort bf = (ushort)Marshal.ReadInt16(buf, off + 4);
+            short data = Marshal.ReadInt16(buf, off + 6);
+            string t = Now();
+            if ((bf & 0x0400) != 0) Send("{\"type\":\"wheel\",\"delta\":" + data + ",\"dev\":\"" + d + "\",\"t\":" + t + "}");
+            if ((bf & 0x0001) != 0) Send(Btn("left", true, d, t));
+            if ((bf & 0x0002) != 0) Send(Btn("left", false, d, t));
+            if ((bf & 0x0004) != 0) Send(Btn("right", true, d, t));
+            if ((bf & 0x0008) != 0) Send(Btn("right", false, d, t));
+            if ((bf & 0x0010) != 0) Send(Btn("middle", true, d, t));
+            if ((bf & 0x0020) != 0) Send(Btn("middle", false, d, t));
+        }
+        else
+        {
+            uint szHid = (uint)Marshal.ReadInt32(buf, off + 0);
+            uint cnt = (uint)Marshal.ReadInt32(buf, off + 4);
+            int n = (int)Math.Min(szHid * cnt, 16);
+            if (n >= 3)
             {
-                ushort make = (ushort)Marshal.ReadInt16(buf, off + 0);
-                ushort flags = (ushort)Marshal.ReadInt16(buf, off + 2);
-                ushort vkey = (ushort)Marshal.ReadInt16(buf, off + 6);
-                bool kdown = (flags & 1) == 0;
-                Send("{\"type\":\"key\",\"vk\":" + vkey + ",\"sc\":" + make + ",\"down\":" + (kdown ? "true" : "false") + ",\"dev\":\"" + d + "\",\"t\":" + Now() + "}");
-                if (kdown) HostKey(vkey);
-            }
-            else if (type == 0)
-            {
-                ushort bf = (ushort)Marshal.ReadInt16(buf, off + 4);
-                short data = Marshal.ReadInt16(buf, off + 6);
-                string t = Now();
-                if ((bf & 0x0400) != 0) Send("{\"type\":\"wheel\",\"delta\":" + data + ",\"dev\":\"" + d + "\",\"t\":" + t + "}");
-                if ((bf & 0x0001) != 0) Send(Btn("left", true, d, t));
-                if ((bf & 0x0002) != 0) Send(Btn("left", false, d, t));
-                if ((bf & 0x0004) != 0) Send(Btn("right", true, d, t));
-                if ((bf & 0x0008) != 0) Send(Btn("right", false, d, t));
-                if ((bf & 0x0010) != 0) Send(Btn("middle", true, d, t));
-                if ((bf & 0x0020) != 0) Send(Btn("middle", false, d, t));
-            }
-            else
-            {
-                uint szHid = (uint)Marshal.ReadInt32(buf, off + 0);
-                uint cnt = (uint)Marshal.ReadInt32(buf, off + 4);
-                int n = (int)Math.Min(szHid * cnt, 16);
-                if (n >= 3)
-                {
-                    byte[] b = new byte[n];
-                    Marshal.Copy(IntPtr.Add(buf, off + 8), b, 0, n);
-                    int usage = b[1] | (b[2] << 8);       // consumer control: [ID, lo, hi]
-                    bool down = usage != 0;
-                    if (down) lastUsage = usage;
-                    Send("{\"type\":\"media\",\"usage\":" + lastUsage + ",\"down\":" + (down ? "true" : "false") + ",\"dev\":\"" + d + "\",\"t\":" + Now() + "}");
-                    if (down) HostUsage(usage); else StopRepeat();
-                }
+                byte[] b = new byte[n];
+                Marshal.Copy(IntPtr.Add(buf, off + 8), b, 0, n);
+                int usage = b[1] | (b[2] << 8);       // consumer control: [ID, lo, hi]
+                bool down = usage != 0;
+                if (down) lastUsage = usage;
+                Send("{\"type\":\"media\",\"usage\":" + lastUsage + ",\"down\":" + (down ? "true" : "false") + ",\"dev\":\"" + d + "\",\"t\":" + Now() + "}");
+                if (down) HostUsage(usage); else StopRepeat();
             }
         }
-        finally { Marshal.FreeHGlobal(buf); }
     }
 
     // due tasti F13–F21 pressi in rapida successione = firma di un controllo; se è nella mappa si esegue l'azione
@@ -243,7 +183,7 @@ public static class PadBridge
                     total += e.repR;
                 }
             }
-            catch { }
+            catch (Exception) { /* la ripetizione termina: il tasto è stato rilasciato, il ponte si ferma o l'azione non è più eseguibile */ }
         });
         t.IsBackground = true; t.Start();
     }
@@ -387,7 +327,7 @@ public static class PadBridge
             for (int i = clients.Count - 1; i >= 0; i--)
             {
                 try { Write(clients[i], frame); }
-                catch { try { clients[i].Abort(); } catch { } clients.RemoveAt(i); }
+                catch { Quiet(() => clients[i].Abort()); clients.RemoveAt(i); }
             }
             ClientCount = clients.Count;
         }
@@ -415,7 +355,7 @@ public static class PadBridge
             if (path == "/health")
             {
                 rs.ContentType = "application/json";
-                byte[] b = Encoding.UTF8.GetBytes("{\"ok\":true,\"padEvents\":" + PadEvents + ",\"otherEventsDiscarded\":" + OtherEvents + ",\"clients\":" + ClientCount +
+                byte[] b = Encoding.UTF8.GetBytes("{\"ok\":true,\"padEvents\":" + RawInput.PadEvents + ",\"otherEventsDiscarded\":" + RawInput.OtherEvents + ",\"clients\":" + ClientCount +
                     ",\"hostEntries\":" + HostEntries + ",\"hostRuns\":" + HostRuns + "," + LinkJson() + "}");
                 rs.ContentLength64 = b.Length;
                 rs.OutputStream.Write(b, 0, b.Length);
@@ -447,14 +387,22 @@ public static class PadBridge
             }
             else { rs.StatusCode = 404; rs.Close(); }
         }
-        catch { try { rs.Abort(); } catch { } }
+        catch { Quiet(() => rs.Abort()); }
+    }
+
+    /* pulizia "al meglio": un client già disconnesso o un listener già fermo non sono errori da segnalare */
+    static void Quiet(Action cleanup)
+    {
+        try { cleanup(); } catch (Exception) { }
     }
 
     public static string Start(int port, int seconds, string[] padMarkers, string[] allowedOrigins)
     {
         markers = padMarkers;
+        RawInput.Markers = padMarkers;
+        RawInput.OnPadInput = HandleInput;
         origins = allowedOrigins;
-        try { ScanLink(); } catch { }
+        Quiet(() => ScanLink());
         listener = new HttpListener();
         listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
         try { listener.Start(); }
@@ -480,7 +428,7 @@ public static class PadBridge
         {
             while (!Stopped)
             {
-                try { if (ScanLink()) Send("{\"type\":\"status\"," + LinkJson() + "}"); } catch { }
+                Quiet(() => { if (ScanLink()) Send("{\"type\":\"status\"," + LinkJson() + "}"); });
                 Thread.Sleep(1500);
             }
         });
@@ -489,19 +437,9 @@ public static class PadBridge
         DateTime end = seconds > 0 ? DateTime.Now.AddSeconds(seconds) : DateTime.MaxValue;
         Thread raw = new Thread(delegate ()
         {
-            MsgWin w = new MsgWin();
-            RAWINPUTDEVICE[] d = new RAWINPUTDEVICE[3];
-            d[0].usUsagePage = 0x01; d[0].usUsage = 0x06; d[0].dwFlags = 0x100; d[0].hwndTarget = w.Handle;
-            d[1].usUsagePage = 0x01; d[1].usUsage = 0x02; d[1].dwFlags = 0x100; d[1].hwndTarget = w.Handle;
-            d[2].usUsagePage = 0x0C; d[2].usUsage = 0x01; d[2].dwFlags = 0x100; d[2].hwndTarget = w.Handle;
-            RegisterRawInputDevices(d, 3, (uint)Marshal.SizeOf(typeof(RAWINPUTDEVICE)));
-            // attende un messaggio (WM_INPUT incluso) senza dormire: l'evento viene letto subito, non al "tick" successivo
-            while (!Stopped && DateTime.Now < end) { MsgWaitForMultipleObjects(0, null, false, 50, 0x04FF); Application.DoEvents(); }
-            for (int i = 0; i < 3; i++) { d[i].dwFlags = 0x1; d[i].hwndTarget = IntPtr.Zero; }
-            RegisterRawInputDevices(d, 3, (uint)Marshal.SizeOf(typeof(RAWINPUTDEVICE)));
-            w.DestroyHandle();
+            RawInput.Listen(() => Stopped || DateTime.Now >= end);
             Stopped = true;
-            try { listener.Stop(); } catch { }
+            Quiet(() => listener.Stop());
         });
         raw.SetApartmentState(ApartmentState.STA);
         raw.IsBackground = true; raw.Start();
@@ -515,7 +453,7 @@ public static class PadBridge
             for (int i = clients.Count - 1; i >= 0; i--)
             {
                 try { Write(clients[i], text); }
-                catch { try { clients[i].Abort(); } catch { } clients.RemoveAt(i); }
+                catch { Quiet(() => clients[i].Abort()); clients.RemoveAt(i); }
             }
             ClientCount = clients.Count;
         }
@@ -523,19 +461,16 @@ public static class PadBridge
 }
 '@
 
-Add-Type -TypeDefinition $src -ReferencedAssemblies System.Windows.Forms, System.dll, System.Web.Extensions
+$core = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $PSScriptRoot 'lib\RawInput.cs')
+Add-Type -TypeDefinition ($src + "`n" + $core) -ReferencedAssemblies System.Windows.Forms, System.dll, System.Web.Extensions
 Write-Output 'Compilazione riuscita.'
 if ($CompileOnly) { return }
 
-# Wireless: l'indirizzo BLE del pad arriva da -BleAddress, da MACROPAD_BLE_ADDRESS o dalla ricerca per nome (solo il dispositivo "MINI_KEYBOARD").
-# Senza indirizzo il ponte lavora solo in USB (marcatore VID_1189).
-if (-not $BleAddress) { $BleAddress = $env:MACROPAD_BLE_ADDRESS }
-if (-not $BleAddress) {
-  $found = Get-PnpDevice -FriendlyName 'MINI_KEYBOARD' -ErrorAction SilentlyContinue | Where-Object { $_.InstanceId -match 'DEV_([0-9A-Fa-f]{12})' } | Select-Object -First 1
-  if ($found -and $found.InstanceId -match 'DEV_([0-9A-Fa-f]{12})') { $BleAddress = $Matches[1] }
-}
-$BleAddress = ($BleAddress -replace '[^0-9A-Fa-f]', '')
-if ($BleAddress.Length -eq 12) { $PadMarkers = @($PadMarkers) + $BleAddress.ToUpperInvariant() }
+# Wireless: l'indirizzo BLE del pad arriva da -BleAddress, da MACROPAD_BLE_ADDRESS o dalla ricerca per nome (lib\PadDevice.ps1).
+# Senza indirizzo si lavora solo in USB (marcatore VID_1189).
+. (Join-Path $PSScriptRoot 'lib\PadDevice.ps1')
+$BleAddress = Resolve-PadBleAddress $BleAddress
+if ($BleAddress) { $PadMarkers = @($PadMarkers) + $BleAddress }
 else { Write-Output 'Wireless: indirizzo BLE non trovato, il ponte vede solo il collegamento USB (usa -BleAddress per indicarlo).' }
 
 [PadBridge]::HostEnabled = -not $NoHost
@@ -558,4 +493,4 @@ while (-not [PadBridge]::Stopped) {
     Write-Output ('[{0}] pagine collegate: {1}' -f (Get-Date -Format 'HH:mm:ss'), $lastClients)
   }
 }
-Write-Output ('Terminato. Eventi del macropad inoltrati: {0}; eventi di altri dispositivi scartati: {1}; azioni dal PC eseguite: {2}' -f [PadBridge]::PadEvents, [PadBridge]::OtherEvents, [PadBridge]::HostRuns)
+Write-Output ('Terminato. Eventi del macropad inoltrati: {0}; eventi di altri dispositivi scartati: {1}; azioni dal PC eseguite: {2}' -f [RawInput]::PadEvents, [RawInput]::OtherEvents, [PadBridge]::HostRuns)

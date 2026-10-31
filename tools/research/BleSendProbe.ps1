@@ -1,4 +1,4 @@
-# INVIO di UN frame di prova alla caratteristica AE41 del macropad e ascolto di AE42 (Windows PowerShell 5.1).
+﻿# INVIO di UN frame di prova alla caratteristica AE41 del macropad e ascolto di AE42 (Windows PowerShell 5.1).
 # ATTENZIONE: questo è l'unico script del progetto che SCRIVE sul dispositivo via Bluetooth.
 # Barriere di sicurezza:
 #   - richiede -IUnderstand (esplicito);
@@ -144,14 +144,10 @@ if ($CompileOnly) { return }
 
 $T = $out.CompiledAssembly.GetType('BleSendProbe')
 $lines = $T.GetField('Lines').GetValue($null)
-# Indirizzo BLE del pad: -Address, variabile MACROPAD_BLE_ADDRESS oppure ricerca per nome ("MINI_KEYBOARD") fra i dispositivi già associati.
-if (-not $Address) { $Address = $env:MACROPAD_BLE_ADDRESS }
-if (-not $Address) {
-  $found = Get-PnpDevice -FriendlyName 'MINI_KEYBOARD' -ErrorAction SilentlyContinue | Where-Object { $_.InstanceId -match 'DEV_([0-9A-Fa-f]{12})' } | Select-Object -First 1
-  if ($found -and $found.InstanceId -match 'DEV_([0-9A-Fa-f]{12})') { $Address = $Matches[1] }
-}
-$Address = ($Address -replace '[^0-9A-Fa-f]', '')
-if ($Address.Length -ne 12) { Write-Output 'Indirizzo BLE non trovato: associa il pad a Windows (Bluetooth) oppure passa -Address con le 12 cifre esadecimali.'; return }
+# Indirizzo BLE del pad: -Address, MACROPAD_BLE_ADDRESS oppure ricerca per nome (vedi lib\PadDevice.ps1).
+. (Join-Path $PSScriptRoot '..\lib\PadDevice.ps1')
+$Address = Resolve-PadBleAddress $Address
+if (-not $Address) { Write-Output 'Indirizzo BLE non trovato: associa il pad a Windows (Bluetooth) oppure passa -Address con le 12 cifre esadecimali.'; return }
 $addr = [uint64]::Parse($Address, [System.Globalization.NumberStyles]::HexNumber)
 try { Write-Output ($T.GetMethod('Start').Invoke($null, @($addr))) }
 catch { Write-Output ('ERRORE: ' + $_.Exception.InnerException.Message); [void]$T.GetMethod('Stop').Invoke($null, @()); return }

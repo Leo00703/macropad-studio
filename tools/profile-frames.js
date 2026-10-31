@@ -2,19 +2,18 @@
 // Converte un profilo esportato dal configuratore (JSON) nei pacchetti da inviare al pad, usando ESATTAMENTE il
 // modulo di protocollo app/protocol.js (lo stesso della vista live). Non tocca il dispositivo: stampa JSON.
 //
-//   node tools/profile-frames.js <profilo.json> [--signature|--no-signature] [--volume-as-key|--no-volume-as-key]
+//   node tools/profile-frames.js <profilo.json> [--signature|--no-signature]
 //        [--no-host-actions] [--sign-all] [--layers 1,2,3]
 //
 // Con la firma attiva i controlli SENZA azione ricevono la sola firma (disattivabile con --no-sign-empty).
 // Uscita: array JSON di { label, hex } con hex = 64 byte del payload (il pad li riceve come report ID 3).
 const fs = require('fs');
-const path = require('path');
 
-const MP = new Function(fs.readFileSync(path.join(__dirname, '..', 'app', 'protocol.js'), 'utf8') + '\nreturn MP;')();
+const MP = require('../app/protocol.js');
 
 const args = process.argv.slice(2);
 const file = args.find((a) => !a.startsWith('--'));
-if (!file) { console.error('uso: node tools/profile-frames.js <profilo.json> [--signature|--no-signature] [--volume-as-key] [--layers 1,2,3]'); process.exit(2); }
+if (!file) { console.error('uso: node tools/profile-frames.js <profilo.json> [--signature|--no-signature] [--layers 1,2,3]'); process.exit(2); }
 const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 const profile = data.profile || data;
 if (!profile || !Array.isArray(profile.layers) || profile.layers.length !== 3) { console.error('profilo non valido: servono 3 layer'); process.exit(2); }
@@ -24,12 +23,10 @@ const layout = data.layout && Array.isArray(data.layout.keys) && data.layout.key
 const li = args.indexOf('--layers');
 const layers = li >= 0 ? args[li + 1].split(',').map(Number) : [1, 2, 3];
 const opts = {
-  mouseAlt: !!layout.mouseAlt,
   signature: args.includes('--signature') ? true : args.includes('--no-signature') ? false : !!profile.signature,
-  volumeAsKey: args.includes('--no-volume-as-key') ? false : (args.includes('--volume-as-key') || !!profile.volumeAsKey),
   signEmpty: !args.includes('--no-sign-empty') && profile.signEmpty !== false,
 };
-if (!opts.signature) { opts.volumeAsKey = false; opts.signEmpty = false; }
+if (!opts.signature) opts.signEmpty = false;
 // media/mouse con azione duplicata: solo firma sul pad, azione eseguita dal ponte (PadBridge, /hostmap)
 // piano di firma automatico: solo le azioni a tastiera che si confondono con altre ricevono la firma (--sign-all: tutte)
 opts.plan = opts.signature ? MP.signPlan(Object.assign({}, profile, { signAll: args.includes('--sign-all') || !!profile.signAll }), layout) : null;

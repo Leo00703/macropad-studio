@@ -1,4 +1,4 @@
-# Ascolto PASSIVO delle notifiche del servizio 0xAE40 / caratteristica 0xAE42 del macropad (Windows PowerShell 5.1).
+﻿# Ascolto PASSIVO delle notifiche del servizio 0xAE40 / caratteristica 0xAE42 del macropad (Windows PowerShell 5.1).
 #   - si iscrive alle notifiche (scrittura sul solo descrittore CCCD: volatile, standard BLE);
 #   - NON scrive mai su AE41 (la caratteristica dei comandi);
 #   - registra ogni notifica con l'ora; alla fine si disiscrive.
@@ -127,14 +127,10 @@ if ($CompileOnly) { return }
 
 $T     = $out.CompiledAssembly.GetType('BleNotifyProbe')
 $lines = $T.GetField('Lines').GetValue($null)
-# Indirizzo BLE del pad: -Address, variabile MACROPAD_BLE_ADDRESS oppure ricerca per nome ("MINI_KEYBOARD") fra i dispositivi già associati.
-if (-not $Address) { $Address = $env:MACROPAD_BLE_ADDRESS }
-if (-not $Address) {
-  $found = Get-PnpDevice -FriendlyName 'MINI_KEYBOARD' -ErrorAction SilentlyContinue | Where-Object { $_.InstanceId -match 'DEV_([0-9A-Fa-f]{12})' } | Select-Object -First 1
-  if ($found -and $found.InstanceId -match 'DEV_([0-9A-Fa-f]{12})') { $Address = $Matches[1] }
-}
-$Address = ($Address -replace '[^0-9A-Fa-f]', '')
-if ($Address.Length -ne 12) { Write-Output 'Indirizzo BLE non trovato: associa il pad a Windows (Bluetooth) oppure passa -Address con le 12 cifre esadecimali.'; return }
+# Indirizzo BLE del pad: -Address, MACROPAD_BLE_ADDRESS oppure ricerca per nome (vedi lib\PadDevice.ps1).
+. (Join-Path $PSScriptRoot '..\lib\PadDevice.ps1')
+$Address = Resolve-PadBleAddress $Address
+if (-not $Address) { Write-Output 'Indirizzo BLE non trovato: associa il pad a Windows (Bluetooth) oppure passa -Address con le 12 cifre esadecimali.'; return }
 $addr  = [uint64]::Parse($Address, [System.Globalization.NumberStyles]::HexNumber)
 $svc   = [guid]'0000ae40-0000-1000-8000-00805f9b34fb'
 $chr   = [guid]'0000ae42-0000-1000-8000-00805f9b34fb'

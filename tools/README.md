@@ -5,6 +5,8 @@ Windows PowerShell 5.1 (`Add-Type` con compilatore C# 5) e Node.js. Gli strument
 
 | File | Cosa fa |
 |---|---|
+| `lib/PadDevice.ps1` | Funzione condivisa `Resolve-PadBleAddress` (vedi sotto). |
+| `lib/RawInput.cs` | C# condiviso da `PadBridge.ps1` e `RawInputPad.ps1`: ascolto passivo di Raw Input con filtro di privacy (gli eventi di altri dispositivi sono scartati senza leggerne il contenuto). Gli script lo compilano insieme al proprio C#. |
 | `PadBridge.ps1` | **Ponte** locale: pubblica solo gli eventi del macropad su `127.0.0.1:5174/events` (SSE) per la vista live. Passivo, filtrato per VID, accetta solo l'origine dell'app. **Dalla v3 esegue** i controlli media/mouse con azione duplicata (solo se la pagina gli invia la mappa con `POST /hostmap`): tasti media/browser, un tick di rotella, un clic, con ripetizione opzionale a tasto tenuto; `-NoHost` lo disattiva. Si avvia con `start.cmd` nella radice. |
 | `PadWrite.ps1` | Invia pacchetti all'interfaccia vendor (pagina `0xFF00`, report ID 3). **Senza `-Write` è una prova a secco.** |
 | `profile-frames.js` | Converte un profilo esportato dall'app nei pacchetti del pad, con **lo stesso** modulo `app/protocol.js`. |
@@ -24,7 +26,7 @@ Se non lo trova, il ponte lavora solo in USB. Nessun altro dispositivo viene enu
 ## Scrittura sul pad da riga di comando (USB)
 
 * `profile-frames.js` — opzioni: `--signature` / `--no-signature`, `--sign-all`, `--no-host-actions`, `--no-sign-empty`, `--no-clear`,
-  `--volume-as-key` / `--no-volume-as-key`, `--layers 1,2,3`. Senza opzioni usa le impostazioni salvate nel profilo.
+  `--layers 1,2,3`. Senza opzioni usa le impostazioni salvate nel profilo.
 * `PadWrite.ps1` — **senza `-Write` è una prova a secco** (trova il pad e stampa i pacchetti); con `-Write -IUnderstand` scrive.
   È configurazione (macro/LED), non firmware. Parametri: `-FramesFile`, `-GapMs` (pausa fra i pacchetti, predefinita 150 ms: a 40 ms il firmware perde gli ultimi).
 

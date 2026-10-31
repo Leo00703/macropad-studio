@@ -1,4 +1,4 @@
-# Scrive sul macropad (via USB) i pacchetti di configurazione generati da tools/profile-frames.js.
+﻿# Scrive sul macropad (via USB) i pacchetti di configurazione generati da tools/profile-frames.js.
 # Equivale a "Invia layer" del configuratore: stessi pacchetti, stessa interfaccia vendor (pagina 0xFF00, report ID 3).
 #
 # SICUREZZA
@@ -10,7 +10,7 @@ param(
   [Parameter(Mandatory = $true)][string]$FramesFile,
   [switch]$Write,
   [switch]$IUnderstand,
-  [int]$GapMs = 150,
+  [ValidateRange(20, 5000)][int]$GapMs = 150,
   [int]$VendorId = 0x1189,
   [int]$ProductId = 0x8833
 )
@@ -130,13 +130,15 @@ Write-Output ('Interfaccia di configurazione: {0}' -f $cfg.Path)
 
 $json = Get-Content -Raw -Encoding UTF8 -LiteralPath $FramesFile | ConvertFrom-Json
 $frames = New-Object 'System.Collections.Generic.List[byte[]]'
+if (-not $json.frames -or @($json.frames).Count -eq 0) { Write-Output 'ERRORE: il file non contiene pacchetti (campo "frames").'; exit 1 }
 foreach ($f in $json.frames) {
+  if ($f.hex -notmatch '^([0-9A-Fa-f]{2} ?)+$') { Write-Output ('ERRORE: pacchetto "{0}" con esadecimale non valido' -f $f.label); exit 1 }
   $b = [byte[]]($f.hex -split ' ' | ForEach-Object { [Convert]::ToByte($_, 16) })
   if ($b.Length -ne 64) { Write-Output ('ERRORE: pacchetto "{0}" lungo {1} byte, attesi 64' -f $f.label, $b.Length); exit 1 }
   if ($b[0] -ne 0xFE) { Write-Output ('ERRORE: pacchetto "{0}" non inizia con 0xFE' -f $f.label); exit 1 }
   $frames.Add($b)
 }
-Write-Output ('Pacchetti da inviare: {0}   (opzioni: firma={1}, volume come tasti={2})' -f $frames.Count, $json.options.signature, $json.options.volumeAsKey)
+Write-Output ('Pacchetti da inviare: {0}   (opzioni: firma={1})' -f $frames.Count, $json.options.signature)
 if (-not $Write) {
   Write-Output 'PROVA A SECCO: nessuna scrittura. Elenco:'
   foreach ($f in $json.frames) { Write-Output ('  {0}   {1} …' -f $f.label, ($f.hex.Substring(0, 35))) }
