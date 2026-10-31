@@ -13,7 +13,7 @@ protocollo è in [`protocol.js`](protocol.js) (funzioni pure, testate). Nessuna 
 |---|---|
 | **Vista live completa (consigliato)** | doppio clic su [`../start.cmd`](../start.cmd): avvia il ponte (eventi del solo macropad), un server locale e la pagina `http://localhost:5173/live.html` |
 | Solo browser, senza ponte | `python -m http.server 5173 --bind 127.0.0.1 --directory app` dalla radice del repository, poi `http://localhost:5173/live.html`; senza ponte non distingue il pad dalla tastiera |
-| Test | `npm test` (da `app/`) – solo Node, nessuna dipendenza |
+| Test | `npm test` (da `app/`) – solo Node, nessuna dipendenza. `npm run test:browser`: prova nel browser (serve Chrome e Node ≥ 22), confronta 29 passi con `test/browser.snapshot.json`; `-- --update` riscrive l'istantanea dopo un cambiamento voluto |
 
 Serve Chrome o Edge (WebHID). Il ponte è [`../tools/PadBridge.ps1`](../tools/PadBridge.ps1). Mantieni la porta `5173`: il browser
 associa a quell'indirizzo il permesso WebHID e il profilo salvato, e il ponte accetta solo quell'origine.
@@ -43,6 +43,6 @@ controlli. Si carica da **Impostazioni → Importa**.
 * `protocol.js` — protocollo: codifica dei pacchetti, firma automatica, identità "sensore", azioni eseguite dal PC.
 * `fonts/` — Google Sans (variabile) con la sua licenza OFL.
 * `profiles/` — profilo di prova.
-* `test/protocol.test.js` — verifica gli esempi di [`../docs/PROTOCOL.md`](../docs/PROTOCOL.md) e che i moduli non ricopino la logica di `protocol.js`; `test/modules.test.mjs` — prove dei moduli puri.
+* `test/protocol.test.js` — verifica gli esempi di [`../docs/PROTOCOL.md`](../docs/PROTOCOL.md) e che i moduli non ricopino la logica di `protocol.js`; `test/modules.test.mjs` — prove dei moduli puri; `test/browser.mjs` — regressione nel browser (eventi simulati, clic, fogli).
 
 Il protocollo è documentato in [`../docs/PROTOCOL.md`](../docs/PROTOCOL.md), l'hardware in [`../docs/HARDWARE.md`](../docs/HARDWARE.md).

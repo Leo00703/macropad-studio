@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "node test/protocol.test.js && node test/modules.test.mjs",
+    "test:browser": "node test/browser.mjs",
     "serve": "python -m http.server 5173 --bind 127.0.0.1"
   }
 }
