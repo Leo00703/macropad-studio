@@ -1,4 +1,4 @@
-# Ascolto PASSIVO delle notifiche del servizio 0xAE40 / caratteristica 0xAE42 del macropad (Windows PowerShell 5.1).
+﻿# Ascolto PASSIVO delle notifiche del servizio 0xAE40 / caratteristica 0xAE42 del macropad (Windows PowerShell 5.1).
 #   - si iscrive alle notifiche (scrittura sul solo descrittore CCCD: volatile, standard BLE);
 #   - NON scrive mai su AE41 (la caratteristica dei comandi);
 #   - registra ogni notifica con l'ora; alla fine si disiscrive.

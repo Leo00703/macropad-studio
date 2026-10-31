@@ -1,4 +1,4 @@
-# INVIO di UN frame di prova alla caratteristica AE41 del macropad e ascolto di AE42 (Windows PowerShell 5.1).
+﻿# INVIO di UN frame di prova alla caratteristica AE41 del macropad e ascolto di AE42 (Windows PowerShell 5.1).
 # ATTENZIONE: questo è l'unico script del progetto che SCRIVE sul dispositivo via Bluetooth.
 # Barriere di sicurezza:
 #   - richiede -IUnderstand (esplicito);

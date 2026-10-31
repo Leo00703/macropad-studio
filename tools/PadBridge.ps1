@@ -1,4 +1,4 @@
-# Ponte locale (Windows PowerShell 5.1): pubblica SOLO gli eventi del macropad su http://127.0.0.1:<porta>/events
+﻿# Ponte locale (Windows PowerShell 5.1): pubblica SOLO gli eventi del macropad su http://127.0.0.1:<porta>/events
 # (Server-Sent Events), così la pagina dell'app può mostrare la vista in tempo reale anche in background.
 #
 # SICUREZZA E PRIVACY
@@ -21,8 +21,8 @@
 #   la firma arriva da un evento del macropad. Per disattivare: togli "Media e mouse duplicati eseguiti dal PC" nel
 #   configuratore, oppure avvia il ponte con -NoHost.
 param(
-  [int]$Port = 5174,
-  [int]$Seconds = 0,
+  [ValidateRange(1024, 65535)][int]$Port = 5174,
+  [ValidateRange(0, 86400)][int]$Seconds = 0,
   [string[]]$PadMarkers = @('VID_1189'),
   [string]$BleAddress = '',
   [string[]]$AllowedOrigins = @('http://localhost:5173', 'http://127.0.0.1:5173'),
@@ -243,7 +243,7 @@ public static class PadBridge
                     total += e.repR;
                 }
             }
-            catch { }
+            catch (Exception) { /* la ripetizione termina: il tasto è stato rilasciato, il ponte si ferma o l'azione non è più eseguibile */ }
         });
         t.IsBackground = true; t.Start();
     }
@@ -387,7 +387,7 @@ public static class PadBridge
             for (int i = clients.Count - 1; i >= 0; i--)
             {
                 try { Write(clients[i], frame); }
-                catch { try { clients[i].Abort(); } catch { } clients.RemoveAt(i); }
+                catch { Quiet(() => clients[i].Abort()); clients.RemoveAt(i); }
             }
             ClientCount = clients.Count;
         }
@@ -447,14 +447,20 @@ public static class PadBridge
             }
             else { rs.StatusCode = 404; rs.Close(); }
         }
-        catch { try { rs.Abort(); } catch { } }
+        catch { Quiet(() => rs.Abort()); }
+    }
+
+    /* pulizia "al meglio": un client già disconnesso o un listener già fermo non sono errori da segnalare */
+    static void Quiet(Action cleanup)
+    {
+        try { cleanup(); } catch (Exception) { }
     }
 
     public static string Start(int port, int seconds, string[] padMarkers, string[] allowedOrigins)
     {
         markers = padMarkers;
         origins = allowedOrigins;
-        try { ScanLink(); } catch { }
+        Quiet(() => ScanLink());
         listener = new HttpListener();
         listener.Prefixes.Add("http://127.0.0.1:" + port + "/");
         try { listener.Start(); }
@@ -480,7 +486,7 @@ public static class PadBridge
         {
             while (!Stopped)
             {
-                try { if (ScanLink()) Send("{\"type\":\"status\"," + LinkJson() + "}"); } catch { }
+                Quiet(() => { if (ScanLink()) Send("{\"type\":\"status\"," + LinkJson() + "}"); });
                 Thread.Sleep(1500);
             }
         });
@@ -501,7 +507,7 @@ public static class PadBridge
             RegisterRawInputDevices(d, 3, (uint)Marshal.SizeOf(typeof(RAWINPUTDEVICE)));
             w.DestroyHandle();
             Stopped = true;
-            try { listener.Stop(); } catch { }
+            Quiet(() => listener.Stop());
         });
         raw.SetApartmentState(ApartmentState.STA);
         raw.IsBackground = true; raw.Start();
@@ -515,7 +521,7 @@ public static class PadBridge
             for (int i = clients.Count - 1; i >= 0; i--)
             {
                 try { Write(clients[i], text); }
-                catch { try { clients[i].Abort(); } catch { } clients.RemoveAt(i); }
+                catch { Quiet(() => clients[i].Abort()); clients.RemoveAt(i); }
             }
             ClientCount = clients.Count;
         }

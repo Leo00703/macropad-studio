@@ -1,4 +1,4 @@
-# Prototipo Raw Input (Windows PowerShell 5.1): distingue gli eventi del macropad da quelli di tastiera/mouse del PC.
+﻿# Prototipo Raw Input (Windows PowerShell 5.1): distingue gli eventi del macropad da quelli di tastiera/mouse del PC.
 #
 # PRIVACY E SICUREZZA (leggere prima di eseguire)
 #   - È un monitor PASSIVO: registra la ricezione di Raw Input con RIDEV_INPUTSINK, non blocca né modifica nulla;
@@ -7,7 +7,7 @@
 #     vengono SCARTATI SUBITO: si incrementa un contatore, il contenuto non viene letto né mostrato né salvato.
 #   - Dura -Seconds (predefinito 45) e poi termina da solo. Nessun file scritto.
 param(
-  [int]$Seconds = 45,
+  [ValidateRange(1, 3600)][int]$Seconds = 45,
   [switch]$CompileOnly,
   [string[]]$PadMarkers = @('VID_1189'),
   [string]$BleAddress = ''

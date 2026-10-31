@@ -1,4 +1,4 @@
-# Funzioni condivise dagli strumenti PowerShell: indirizzo Bluetooth del macropad.
+﻿# Funzioni condivise dagli strumenti PowerShell: indirizzo Bluetooth del macropad.
 # Uso:  . (Join-Path $PSScriptRoot 'lib\PadDevice.ps1')      (dagli script in research\: '..\lib\PadDevice.ps1')
 
 # Indirizzo BLE del pad (12 cifre esadecimali maiuscole) oppure $null. Ordine di ricerca: il parametro, la variabile

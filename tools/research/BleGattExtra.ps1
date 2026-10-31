@@ -1,4 +1,4 @@
-# Letture AGGIUNTIVE in SOLA LETTURA sul servizio 0xAE40 del macropad (Windows PowerShell 5.1):
+﻿# Letture AGGIUNTIVE in SOLA LETTURA sul servizio 0xAE40 del macropad (Windows PowerShell 5.1):
 #   - elenca i descrittori delle caratteristiche AE41/AE42;
 #   - legge SOLO i descrittori standard "Characteristic User Description" (0x2901) e "Presentation Format" (0x2904);
 #   - legge la dimensione massima del PDU ATT negoziata (MTU).

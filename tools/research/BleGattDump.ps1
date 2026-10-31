@@ -1,4 +1,4 @@
-# Enumerazione GATT del macropad in SOLA LETTURA (Windows PowerShell 5.1).
+﻿# Enumerazione GATT del macropad in SOLA LETTURA (Windows PowerShell 5.1).
 #   - interroga un solo indirizzo BLE (quello del macropad), mai altri dispositivi;
 #   - elenca servizi e caratteristiche con le loro proprietà;
 #   - legge solo caratteristiche standard innocue (Device Information, Battery);
