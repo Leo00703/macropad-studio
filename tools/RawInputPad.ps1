@@ -181,15 +181,11 @@ Add-Type -TypeDefinition $src -ReferencedAssemblies System.Windows.Forms, System
 Write-Output 'Compilazione riuscita.'
 if ($CompileOnly) { return }
 
-# Wireless: l'indirizzo BLE del pad arriva da -BleAddress, da MACROPAD_BLE_ADDRESS o dalla ricerca per nome (solo il dispositivo "MINI_KEYBOARD").
-# Senza indirizzo il ponte lavora solo in USB (marcatore VID_1189).
-if (-not $BleAddress) { $BleAddress = $env:MACROPAD_BLE_ADDRESS }
-if (-not $BleAddress) {
-  $found = Get-PnpDevice -FriendlyName 'MINI_KEYBOARD' -ErrorAction SilentlyContinue | Where-Object { $_.InstanceId -match 'DEV_([0-9A-Fa-f]{12})' } | Select-Object -First 1
-  if ($found -and $found.InstanceId -match 'DEV_([0-9A-Fa-f]{12})') { $BleAddress = $Matches[1] }
-}
-$BleAddress = ($BleAddress -replace '[^0-9A-Fa-f]', '')
-if ($BleAddress.Length -eq 12) { $PadMarkers = @($PadMarkers) + $BleAddress.ToUpperInvariant() }
+# Wireless: l'indirizzo BLE del pad arriva da -BleAddress, da MACROPAD_BLE_ADDRESS o dalla ricerca per nome (lib\PadDevice.ps1).
+# Senza indirizzo si lavora solo in USB (marcatore VID_1189).
+. (Join-Path $PSScriptRoot 'lib\PadDevice.ps1')
+$BleAddress = Resolve-PadBleAddress $BleAddress
+if ($BleAddress) { $PadMarkers = @($PadMarkers) + $BleAddress }
 else { Write-Output 'Wireless: indirizzo BLE non trovato, il ponte vede solo il collegamento USB (usa -BleAddress per indicarlo).' }
 Write-Output ("In ascolto per {0} s. Solo gli eventi del macropad (marcatori: {1}) vengono mostrati; gli altri sono solo contati." -f $Seconds, ($PadMarkers -join ', '))
 [RawPad]::Run($Seconds, $PadMarkers)

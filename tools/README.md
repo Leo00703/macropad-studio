@@ -5,6 +5,7 @@ Windows PowerShell 5.1 (`Add-Type` con compilatore C# 5) e Node.js. Gli strument
 
 | File | Cosa fa |
 |---|---|
+| `lib/PadDevice.ps1` | Funzione condivisa `Resolve-PadBleAddress` (vedi sotto). |
 | `PadBridge.ps1` | **Ponte** locale: pubblica solo gli eventi del macropad su `127.0.0.1:5174/events` (SSE) per la vista live. Passivo, filtrato per VID, accetta solo l'origine dell'app. **Dalla v3 esegue** i controlli media/mouse con azione duplicata (solo se la pagina gli invia la mappa con `POST /hostmap`): tasti media/browser, un tick di rotella, un clic, con ripetizione opzionale a tasto tenuto; `-NoHost` lo disattiva. Si avvia con `start.cmd` nella radice. |
 | `PadWrite.ps1` | Invia pacchetti all'interfaccia vendor (pagina `0xFF00`, report ID 3). **Senza `-Write` è una prova a secco.** |
 | `profile-frames.js` | Converte un profilo esportato dall'app nei pacchetti del pad, con **lo stesso** modulo `app/protocol.js`. |
