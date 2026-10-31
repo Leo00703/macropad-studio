@@ -8,7 +8,6 @@ import { isTurn, setDetected, shownLayer } from './labels.js';
 import { clearChannel, press, release } from './press.js';
 import { note, showTags } from './tags.js';
 
-/* ---------- riconoscimento degli eventi ---------- */
 /* Il layer FISICO del pad non viene comunicato: si deduce. Un evento che appartiene a un solo layer (ogni controllo
    firmato, o un'azione presente in un solo layer) lo stabilisce. Un evento ambiguo tra più layer si risolve con il
    layer fisico già noto — NON con quello visualizzato — e solo in mancanza si usa il layer scelto dall'utente. */

@@ -38,7 +38,6 @@ document.querySelectorAll('#layers button').forEach((b) => b.addEventListener('c
 initSheetButtons();
 watchHid();
 
-/* ---------- avvio ---------- */
 // dopo ogni modifica del profilo: si rileggono le firme, si ridisegnano le etichette, si aggiorna il ponte e il confronto col pad
 onCommit(load);
 onCommit(paintLabels);

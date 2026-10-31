@@ -65,7 +65,6 @@ export function watchHid() {
   check();
 }
 
-/* ---------- stato del ponte e diagnostica ---------- */
 export function chips() {
   const cb = $('#chipBridge'), cp = $('#chipProfile');
   paintSendChip(); paintLink();
@@ -94,7 +93,6 @@ export function chips() {
     : 'Il ponte non è attivo: avvia start.cmd (o tools\\PadBridge.ps1) per vedere il pad anche in background.';
   if (!recents.length) renderRecents();
 }
-/* ---------- ponte e fallback dalla pagina ---------- */
 let es = null;
 export function connectBridge() {
   try { es = new EventSource(BRIDGE + '/events'); } catch (err) { warnOnce('EventSource non disponibile', err); setTimeout(connectBridge, 4000); return; }

@@ -14,7 +14,6 @@ export function ripple(c, s) {
   Bg.ripple(r.left + r.width / 2, r.top + r.height / 2, s);
 }
 
-/* ---------- 2: disegno del pad ---------- */
 const stopsOf = (arr) => arr.map(([o, c, a]) => h('stop', { offset: o, style: 'stop-color:' + c + (a != null ? ';stop-opacity:' + a : '') }));
 /* gradienti, filtri e motivi usati dal disegno */
 function buildDefs(svg) {

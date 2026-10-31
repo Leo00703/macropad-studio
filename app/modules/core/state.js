@@ -2,7 +2,6 @@
 
 export const BRIDGE = 'http://127.0.0.1:5174';
 export const STORE = 'macropad-studio.v1';          // chiave del profilo salvato nel browser (localStorage)
-/* ---------- stato ---------- */
 export const DEFAULT_LAYOUT = { keys: [1, 2, 3, 4, 5, 6, 7, 8, 9], knobs: [[13, 14, 15], [16, 17, 18], [19, 20, 21]] };
 export const state = {
   store: null, layout: DEFAULT_LAYOUT, sigs: [],

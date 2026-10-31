@@ -1,7 +1,6 @@
 /* keymap.js — tabelle tasto ↔ codici, nomi dei tasti e modificatori. */
 import { MP } from './mp.js';
 
-/* ---------- tabelle ---------- */
 export const U2VK = {};
 for (let i = 0; i < 26; i++) U2VK[0x04 + i] = 65 + i;
 for (let i = 0; i < 9; i++) U2VK[0x1E + i] = 49 + i;

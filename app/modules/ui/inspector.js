@@ -9,7 +9,6 @@ import { controlName, dupGroups, iconNameFor, isUniqueEvent, kindFor, labelFor, 
 import { hotOf } from './pad.js';
 import { press, release, rotate } from './press.js';
 
-/* ---------- ispettore ancorato al controllo ---------- */
 export const card = $('#inspector');
 export function select(sel) {
   const same = state.sel && sel && state.sel.kind === sel.kind && state.sel.id === sel.id && state.sel.k === sel.k;
@@ -158,7 +157,6 @@ export function placeInspector() {
   dot.setAttribute('cx', sx); dot.setAttribute('cy', sy);
 }
 
-/* ---------- interazione con il mouse (selezione e prova delle animazioni) ---------- */
 export function attachInteraction() {
   document.querySelectorAll('#pad .key').forEach((g) => {
     const id = Number(g.dataset.id);

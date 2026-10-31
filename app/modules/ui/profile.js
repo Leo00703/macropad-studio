@@ -4,7 +4,6 @@ import { deriveSignatures } from '../core/signatures.js';
 import { DEFAULT_LAYOUT, STORE, state } from '../core/state.js';
 import { storage } from './dom.js';
 
-/* ---------- profilo → firme riconoscibili ---------- */
 export function load() {
   const raw = storage.read(STORE);
   state.store = raw && raw.profile && Array.isArray(raw.profile.layers) ? raw : null;

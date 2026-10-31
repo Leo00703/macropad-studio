@@ -4,7 +4,6 @@ import { $, el } from './dom.js';
 import { controlName, labelFor } from './labels.js';
 import { hotOf } from './pad.js';
 
-/* ---------- etichette sul pad e riga dell'ultima azione ---------- */
 const tagEls = new Map();
 const tagTimers = new Map();
 function showTag(id, text) {

@@ -8,7 +8,6 @@ import { Bg } from './effects.js';
 import { renderInspector } from './inspector.js';
 import { ledInfo } from './profile.js';
 
-/* ---------- etichette e layer ---------- */
 export const shownLayer = () => (state.layerMode === 'auto' ? state.detected : state.layerMode);
 export const iconNameFor = (id, L) => { const s = state.sigs.find((x) => x.layer === L && x.id === id); return s && s.icon ? s.icon : null; };
 export const labelFor = (id, L) => { const s = state.sigs.find((x) => x.layer === L && x.id === id); return s ? s.label : ''; };
@@ -102,5 +101,4 @@ export function dupGroups(L) {
   return [...groups.values()].filter((g) => g.ids.size > 1);
 }
 
-/* ---------- stati di pressione ---------- */
 export const MIN_SHOW = 110;
