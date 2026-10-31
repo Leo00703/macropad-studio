@@ -1,6 +1,7 @@
 /* diag.js — registro grezzo degli eventi e pannello di diagnostica. */
 import { MEDIA_NAME, vkName } from '../core/keymap.js';
 import { $, btn } from './dom.js';
+import { Glass } from './effects.js';
 
 /* Registro degli eventi grezzi con intervalli: serve a tarare le soglie sul pad reale. */
 export const rawLog = [];
@@ -26,4 +27,18 @@ export function toggleDiag(open) {
   box.hidden = !open;
   btn.setAttribute('aria-expanded', String(open));
   if (open) $('#raw').textContent = rawLog.length ? rawLog.slice(0, 14).join('\n') : 'nessun evento';
+}
+
+/* pulsanti del pannello di diagnostica */
+export function initDiagnostics() {
+  $('#diagBtn').addEventListener('click', () => toggleDiag($('#diag').hidden));
+  $('#rawCopy').addEventListener('click', () => {
+    const text = rawLog.slice().reverse().join('\n');
+    const b = $('#rawCopy');
+    // writeText restituisce una promessa: l'esito (anche un rifiuto del browser) si legge quando arriva
+    Promise.resolve(navigator.clipboard && navigator.clipboard.writeText(text))
+      .then(() => { b.textContent = navigator.clipboard ? 'Copiato' : 'Non riuscito'; }, () => { b.textContent = 'Non riuscito'; });
+    setTimeout(() => { b.textContent = 'Copia'; }, 1500);
+  });
+  Glass.attach($('#diag'), 12, 16, 20);
 }

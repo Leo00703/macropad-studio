@@ -239,3 +239,9 @@ export function renderEditor() {
   placeInspector();
   requestAnimationFrame(() => card.classList.add('in'));
 }
+
+/* durante la registrazione di una macro i tasti della pagina vanno all'editor, non alla pagina (fase di cattura) */
+export function initEditor() {
+  window.addEventListener('keydown', (e) => { if (editorState.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, true); } }, true);
+  window.addEventListener('keyup', (e) => { if (editorState.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, false); } }, true);
+}

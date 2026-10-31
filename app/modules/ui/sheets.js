@@ -1,9 +1,9 @@
 /* sheets.js — fogli ancorati ai pulsanti (invio, LED, impostazioni). */
 import { $, btn, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
-import { renderLeds } from './leds.js';
-import { renderSend } from './send.js';
-import { renderSettings } from './settings.js';
+import { openLeds, renderLeds } from './leds.js';
+import { openSend, renderSend } from './send.js';
+import { openSettings, renderSettings } from './settings.js';
 
 export function renderSheets() {
   if (!$('#send').hidden) renderSend();
@@ -54,3 +54,12 @@ export function fillSheet(box, kids) {
   requestAnimationFrame(fade);
 }
 export const hideSheets = (except) => { for (const id of ['#send', '#leds', '#settings']) if (id !== except) $(id).hidden = true; closeDropdowns(); };
+
+/* i pulsanti che aprono i fogli (impostazioni, LED, invio) */
+export function initSheetButtons() {
+  $('#settingsBtn').addEventListener('click', openSettings);
+  $('#ledCard').addEventListener('click', openLeds);
+  $('#ledCard').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLeds(); } });
+  $('#chipSend').addEventListener('click', openSend);
+  $('#chipSend').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSend(); } });
+}

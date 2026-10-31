@@ -4,7 +4,7 @@ import { BRIDGE, state } from '../core/state.js';
 import { $, parseJSON } from './dom.js';
 import { editorState } from './editor.js';
 import { dupGroups, shownLayer } from './labels.js';
-import { keyEvent, mediaEvent, onEvent } from './recognition.js';
+import { keyEvent, mediaEvent, onEvent, wheelEvent } from './recognition.js';
 import { SEND } from './send.js';
 import { renderSheets } from './sheets.js';
 import { paintSendChip } from './store.js';
@@ -115,4 +115,11 @@ export function pageKey(e, down) {
   if (MEDIA_KEY[e.key]) { mediaEvent(MEDIA_KEY[e.key], down, e.timeStamp); return; }
   const vk = CODE2VK[e.code] || ({ ControlLeft: 17, ControlRight: 17, ShiftLeft: 16, ShiftRight: 16, AltLeft: 18, AltRight: 18, MetaLeft: 91, MetaRight: 92 })[e.code];
   if (vk) keyEvent(vk, down, e.timeStamp);
+}
+
+/* senza il ponte la pagina ascolta tastiera e rotella (solo con la finestra in primo piano) */
+export function initPageInput() {
+  window.addEventListener('keydown', (e) => { if (!e.repeat) pageKey(e, true); });
+  window.addEventListener('keyup', (e) => pageKey(e, false));
+  window.addEventListener('wheel', (e) => { if (!state.bridge && !e.target.closest('#pad .knob')) wheelEvent(e.deltaY < 0 ? 1 : -1); }, { passive: true });
 }

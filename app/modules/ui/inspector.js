@@ -3,6 +3,7 @@ import { ctrl, knobEl, state } from '../core/state.js';
 import { $, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
 import { editorState, enterEdit, leaveEdit, renderEditor, stopRec } from './editor.js';
+import { Glass } from './effects.js';
 import { iconEl } from './icons.js';
 import { controlName, dupGroups, iconNameFor, isUniqueEvent, kindFor, labelFor, shownLayer } from './labels.js';
 import { hotOf } from './pad.js';
@@ -177,4 +178,13 @@ export function attachInteraction() {
     g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select({ kind: 'knob', k }); } });
     g.addEventListener('wheel', (e) => { e.preventDefault(); rotate(k, e.deltaY < 0 ? -1 : 1); }, { passive: false });
   });
+}
+
+/* un clic sullo sfondo chiude la scheda; la scheda segue il ridimensionamento della finestra */
+export function initInspector() {
+  $('#stage').addEventListener('pointerdown', (e) => {
+    if (state.sel && !e.target.closest('.key, .knob')) select(state.sel);
+  });
+  window.addEventListener('resize', () => { placeInspector(); });
+  Glass.attach(card, 12, 18, 24);
 }

@@ -32,3 +32,10 @@ export function dropdown(items, cur, pick, label, placeholder) {
   wrap.append(head);
   return wrap;
 }
+
+/* un clic fuori, Esc o il ridimensionamento chiudono gli elenchi aperti */
+export function initDropdowns() {
+  window.addEventListener('pointerdown', (e) => { if (ddOpen.size && !e.target.closest('.dd-list, .dd-head')) closeDropdowns(); }, true);
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ddOpen.size) { e.stopPropagation(); closeDropdowns(); } }, true);
+  window.addEventListener('resize', closeDropdowns);
+}
