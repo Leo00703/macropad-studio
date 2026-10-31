@@ -24,7 +24,7 @@ Se non lo trova, il ponte lavora solo in USB. Nessun altro dispositivo viene enu
 ## Scrittura sul pad da riga di comando (USB)
 
 * `profile-frames.js` — opzioni: `--signature` / `--no-signature`, `--sign-all`, `--no-host-actions`, `--no-sign-empty`, `--no-clear`,
-  `--volume-as-key` / `--no-volume-as-key`, `--layers 1,2,3`. Senza opzioni usa le impostazioni salvate nel profilo.
+  `--layers 1,2,3`. Senza opzioni usa le impostazioni salvate nel profilo.
 * `PadWrite.ps1` — **senza `-Write` è una prova a secco** (trova il pad e stampa i pacchetti); con `-Write -IUnderstand` scrive.
   È configurazione (macro/LED), non firmware. Parametri: `-FramesFile`, `-GapMs` (pausa fra i pacchetti, predefinita 150 ms: a 40 ms il firmware perde gli ultimi).
 

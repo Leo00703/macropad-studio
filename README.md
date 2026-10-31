@@ -6,7 +6,7 @@
 No vendor software, no installer, no dependencies: one web page that talks to the pad over WebHID,
 plus a small optional Windows bridge that tells the pad apart from your keyboard.
 
-[![Tests](https://img.shields.io/badge/tests-54%20passing-brightgreen)](app/test/protocol.test.js)
+[![Tests](https://github.com/Leo00703/macropad-studio/actions/workflows/test.yml/badge.svg)](https://github.com/Leo00703/macropad-studio/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Dependencies: none](https://img.shields.io/badge/dependencies-none-lightgrey)
 
@@ -131,12 +131,12 @@ flowchart LR
 ## Development
 
 ```bash
-node app/test/protocol.test.js        # 54 tests: protocol examples, signing plan, host actions, live.js ↔ protocol.js parity
+node app/test/protocol.test.js        # protocol examples, signing plan, host actions, one-copy guard for live.js
 node tools/profile-frames.js app/profiles/diagnostico-layer1.json   # profile → packets, no device needed
 ```
 
-* `app/protocol.js` is pure (no DOM, no HID) and is the single source of truth for encoding. A small block of it is duplicated on
-  purpose inside `live.js` (`HOSTED-BEGIN … HOSTED-END`); a test compares both, so change them together.
+* `app/protocol.js` is pure (no DOM, no HID) and is the single source of truth for encoding, signing and host-executed actions;
+  `live.js` calls it through the global `MP` and must not keep its own copy (a test guards this).
 * Pull requests that touch the protocol should include the hex packets and, when possible, what was observed on a real pad.
 * [`CLAUDE.md`](CLAUDE.md) holds short working notes for AI coding agents (and a map of the repo).
 

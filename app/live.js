@@ -3,8 +3,12 @@
    Le sezioni sono introdotte da commenti "---------- titolo ----------". */
 (() => {
   'use strict';
+  if (typeof MP === 'undefined') {            // senza protocol.js la pagina non può funzionare: messaggio chiaro invece di un errore opaco
+    document.body.textContent = 'Il modulo di protocollo (protocol.js) non è stato caricato: apri la pagina da http://localhost:5173/live.html.';
+    return;
+  }
   const BRIDGE = 'http://127.0.0.1:5174';
-  const STORE = 'macropad-studio.v1';          // stesso profilo salvato dal configuratore (stessa origine)
+  const STORE = 'macropad-studio.v1';          // chiave del profilo salvato nel browser (localStorage)
   const NS = 'http://www.w3.org/2000/svg';
   const $ = (s, r = document) => r.querySelector(s);
   const h = (tag, attrs = {}, ...kids) => {
@@ -20,6 +24,14 @@
     return n;
   };
   const REDUCE_MOTION = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* localStorage può mancare (finestra privata, dati bloccati) e un JSON può essere corrotto: la pagina funziona lo stesso,
+     ma l'anomalia si segnala una volta in console invece di sparire in un catch vuoto. */
+  const warnOnce = (() => { const seen = new Set(); return (what, err) => { if (!seen.has(what)) { seen.add(what); console.warn(what + ':', err); } }; })();
+  const parseJSON = (text, what) => { try { return JSON.parse(text); } catch (err) { warnOnce(what, err); return null; } };
+  const storage = {
+    read(key) { try { return parseJSON(localStorage.getItem(key) || 'null', 'dati salvati illeggibili (' + key + ')'); } catch (err) { warnOnce('localStorage non disponibile', err); return null; } },
+    write(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (err) { warnOnce('localStorage non disponibile', err); } },
+  };
 
   /* ---------- geometria misurata sulla foto dall'alto del prodotto reale ----------
      Unità = pixel della foto, con origine nell'angolo in alto a sinistra della piastra (foto: 95, 305).
@@ -101,8 +113,14 @@
 
   /* ---------- stato ---------- */
   const DEFAULT_LAYOUT = { keys: [1, 2, 3, 4, 5, 6, 7, 8, 9], knobs: [[13, 14, 15], [16, 17, 18], [19, 20, 21]] };
-  const S = { store: null, layout: DEFAULT_LAYOUT, sigs: [], layerMode: 'auto', detected: 1, bridge: false, precise: false, modState: 0, sel: null,
-    signed: false, edit: false, link: { usb: false, ble: false }, linkCap: false, hidSeen: false, volumeAsKey: false, signEmpty: false, hosted: new Map(), plan: null, hostCap: false, hostOk: null, padLayer: 1, padKnown: false, rotCount: [0, 0, 0] };   // padLayer: layer FISICO del pad, dedotto dagli eventi
+  const S = {
+    store: null, layout: DEFAULT_LAYOUT, sigs: [],
+    layerMode: 'auto', detected: 1,            // layer mostrato: 'auto' segue quello fisico, altrimenti 1..3
+    padLayer: 1, padKnown: false,              // layer FISICO del pad, dedotto dagli eventi
+    bridge: false, precise: false, hostCap: false, hostOk: null, linkCap: false, link: { usb: false, ble: false }, hidSeen: false,
+    signed: false, signEmpty: false, plan: null, hosted: new Map(),
+    modState: 0, sel: null, edit: false, rotCount: [0, 0, 0],
+  };
   const ctrl = new Map();          // id → { id, kind: 'key'|'knob', el, act?, knob?, spin? }
   const knobEl = [null, null, null];
   const knobAngle = [0, 0, 0];
@@ -118,93 +136,11 @@
     0x62: 96, 0x63: 110, 0x65: 93 });
   for (let i = 0; i < 12; i++) { U2VK[0x3A + i] = 112 + i; U2VK[0x68 + i] = 124 + i; }
   for (let i = 0; i < 9; i++) U2VK[0x59 + i] = 97 + i;
-  Object.assign(U2VK, { 0x7F: 173, 0x80: 175, 0x81: 174 });          // Muto, Volume +, Volume − come tasti tastiera
-  const VOL_KEY = { 0xE2: 173, 0xE9: 175, 0xEA: 174 };               // usage consumer → VK equivalente
   /* firma univoca (stessa regola di MP.signatureKeys nel configuratore): n = (layer−1)·24 + (id−1), cifre in base 9 → F13+… */
   const sigSteps = (id, layer) => { const n = (layer - 1) * 24 + (id - 1); return [{ vk: 124 + Math.floor(n / 9), mods: 0 }, { vk: 124 + (n % 9), mods: 0 }]; };
   const isSigVk = (vk) => vk >= 124 && vk <= 132;                    // F13–F21
-  /* HOSTED-BEGIN — stessa logica di MP.hostedControls in protocol.js (app/test/protocol.test.js verifica che coincidano).
-     Media e mouse non possono portare la firma: per ogni gruppo di azioni identiche UN controllo resta nativo (il pad
-     la esegue e l'evento è univoco), gli altri inviano solo la firma e l'azione la esegue il ponte sul PC. */
-  const HOST_VK = { 0xE2: 0xAD, 0xEA: 0xAE, 0xE9: 0xAF, 0xB5: 0xB0, 0xB6: 0xB1, 0xB7: 0xB2, 0xCD: 0xB3,
-    0x18A: 0xB4, 0x183: 0xB5, 0x192: 0xB7, 0x221: 0xAA, 0x223: 0xAC, 0x224: 0xA6, 0x225: 0xA7, 0x226: 0xA9, 0x227: 0xA8, 0x22A: 0xAB };
-  function hostActionOf(a) {
-    if (!a) return null;
-    if (a.t === 'media' && HOST_VK[a.usage]) return { group: 'm' + a.usage, act: { k: 'key', vk: HOST_VK[a.usage] } };
-    if (a.t === 'mouse') {
-      if (a.wheel) return { group: 'w' + Math.sign(a.wheel) + ':' + ((a.mod || 0) & 7), act: { k: 'wheel', d: a.wheel > 0 ? 120 : -120, m: (a.mod || 0) & 7 } };
-      if (a.buttons) return { group: 'b' + (a.buttons & 7), act: { k: 'btn', b: a.buttons & 7 } };
-    }
-    return null;
-  }
-  /* ripetizione eseguita dal ponte per i controlli con "Ripeti": attesa prima della prima ripetizione e intervallo (ms) */
-  const clampInt = (v, lo, hi, d) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
-  function repeatOf(profile) {
-    const r = (profile && profile.repeat) || {};
-    return { d: clampInt(r.delay, 100, 2000, 450), r: clampInt(r.rate, 30, 500, 70) };
-  }
-  function hostedControls(profile, layout) {
-    const ids = [...layout.keys, ...layout.knobs.flat()];
-    const groups = new Map();
-    const out = new Map();
-    profile.layers.forEach((L, li) => ids.forEach((id) => {
-      const a = L.controls && L.controls[id];
-      const h = hostActionOf(a);
-      if (!h) return;
-      // "tenuto premuto" scelto a mano: il controllo lo gestisce il ponte (vede pressione e rilascio) e non occupa il posto nativo
-      if (a.hold === 'once') { out.set((li + 1) + ':' + id, h.act); return; }
-      if (a.hold === 'repeat') { out.set((li + 1) + ':' + id, Object.assign({}, h.act, { rep: repeatOf(profile) })); return; }
-      if (!groups.has(h.group)) groups.set(h.group, []);
-      groups.get(h.group).push({ layer: li + 1, id, act: h.act, rank: id >= 13 ? ((id - 13) % 3 === 1 ? 2 : 0) : 1 });
-    }));
-    for (const list of groups.values()) {
-      if (list.length < 2) continue;
-      list.sort((x, y) => x.rank - y.rank || x.layer - y.layer || x.id - y.id);
-      for (const c of list.slice(1)) out.set(c.layer + ':' + c.id, c.act);
-    }
-    return out;
-  }
-  /* identità "sensore" (usage consumer riservato, valido anche in Bluetooth): stessa tabella di MP.SENSOR_USAGES */
-  const SENSOR_USAGES = [];
-  for (const [a, b] of [[0x07, 0x1F], [0x49, 0x5F], [0x67, 0x7F]]) for (let u = a; u <= b && SENSOR_USAGES.length < 72; u++) SENSOR_USAGES.push(u);
-  const sensorUsage = (id, layer) => SENSOR_USAGES[(layer - 1) * 24 + (id - 1)];
-  /* Quali controlli a tastiera portano la firma (modalità automatica): solo quelli la cui azione si confonde con un altro
-     controllo di qualunque layer. Gli altri sono "normali" (tenuta nativa) e si riconoscono dall'azione. */
-  const normMod = (m) => ((m || 0) | ((m || 0) >> 4)) & 0x0F;
-  const seqOf = (a) => (a.steps || []).filter((st) => st.key).map((st) => normMod(st.mod) + ':' + st.key);
-  function seqClash(x, y) {
-    const n = Math.min(x.length, y.length);
-    if (!n) return false;
-    for (let i = 0; i < n; i++) if (x[i] !== y[i]) return false;
-    return true;
-  }
-  function signPlan(profile, layout) {
-    const ids = [...layout.keys, ...layout.knobs.flat()];
-    const all = !!profile.signAll;
-    const items = [];
-    profile.layers.forEach((L, li) => ids.forEach((id) => {
-      const a = L.controls && L.controls[id];
-      if (!a || a.t !== 'keys') return;
-      const seq = seqOf(a);
-      if (!seq.length) return;
-      const rank = id < 13 ? 0 : ((id - 13) % 3 === 1 ? 1 : 2);
-      // "tenuto premuto": Una volta = tocco (firma), Ripeti = tasto normale che segue la mano
-      items.push({ key: (li + 1) + ':' + id, seq, rank, layer: li + 1, id, hold: a.hold, force: a.hold === 'once' ? 'on' : a.hold === 'repeat' ? 'off' : a.sign });
-    }));
-    items.sort((x, y) => x.rank - y.rank || x.layer - y.layer || x.id - y.id);
-    const keys = new Set();
-    const normal = [];
-    for (const it of items) if (it.force === 'off' && (!all || it.hold === 'repeat')) normal.push(it.seq);
-    for (const it of items) {
-      if (it.hold === 'repeat') continue;                                       // la ripetizione esplicita vince su "firma tutto"
-      if (all || it.force === 'on') keys.add(it.key);
-      else if (it.force === 'off') continue;
-      else if (normal.some((q) => seqClash(q, it.seq))) keys.add(it.key);
-      else normal.push(it.seq);
-    }
-    return { keys, hosted: hostedControls(profile, layout) };
-  }
-  /* HOSTED-END */
+  /* Logica del protocollo (piano di firma, azioni eseguite dal PC, identità "sensore"): esiste solo in protocol.js. */
+  const { signPlan, hostedControls, sensorUsage } = MP;
   const CODE2VK = {};
   for (let i = 0; i < 26; i++) CODE2VK['Key' + String.fromCharCode(65 + i)] = 65 + i;
   for (let i = 0; i <= 9; i++) CODE2VK['Digit' + i] = 48 + i;
@@ -217,7 +153,9 @@
     45: 'Ins', 46: 'Canc', 20: 'Bloc Maiusc', 173: 'Muto', 174: 'Volume −', 175: 'Volume +' };
   const vkName = (vk) => KEY_NAME[vk] || (vk >= 65 && vk <= 90 ? String.fromCharCode(vk) : vk >= 48 && vk <= 57 ? String.fromCharCode(vk)
     : vk >= 112 && vk <= 135 ? 'F' + (vk - 111) : vk >= 96 && vk <= 105 ? 'Num ' + (vk - 96) : '0x' + vk.toString(16).toUpperCase());
-  function modBit(vk) { return (vk === 17 || vk === 162 || vk === 163) ? 1 : (vk === 16 || vk === 160 || vk === 161) ? 2 : (vk === 18 || vk === 164 || vk === 165) ? 4 : (vk === 91 || vk === 92) ? 8 : 0; }
+  /* codice tasto virtuale → bit del modificatore (1 Ctrl, 2 Maiusc, 4 Alt, 8 Win); 0 se non è un modificatore */
+  const MOD_BIT = { 17: 1, 162: 1, 163: 1, 16: 2, 160: 2, 161: 2, 18: 4, 164: 4, 165: 4, 91: 8, 92: 8 };
+  const modBit = (vk) => MOD_BIT[vk] || 0;
   const hidMask = (m) => ((m & 0x11) ? 1 : 0) | ((m & 0x22) ? 2 : 0) | ((m & 0x44) ? 4 : 0) | ((m & 0x88) ? 8 : 0);
   const modLabel = (mask) => [mask & 1 && 'Ctrl', mask & 2 && 'Maiusc', mask & 4 && 'Alt', mask & 8 && 'Win'].filter(Boolean).join('+');
 
@@ -238,8 +176,7 @@
   }
   const KIND_NAME = { keys: 'Tastiera', media: 'Media', wheel: 'Rotella del mouse', button: 'Pulsante del mouse' };
   function load() {
-    let raw = null;
-    try { raw = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (_) { raw = null; }
+    const raw = storage.read(STORE);
     S.store = raw && raw.profile && Array.isArray(raw.profile.layers) ? raw : null;
     S.layout = raw && raw.layout && Array.isArray(raw.layout.keys) && raw.layout.keys.length === 9 ? raw.layout : DEFAULT_LAYOUT;
     S.sigs = [];
@@ -247,7 +184,6 @@
     S.plan = null;
     if (!S.store) return;
     S.signed = !!S.store.profile.signature;
-    S.volumeAsKey = S.signed && !!S.store.profile.volumeAsKey;
     S.signEmpty = S.signed && S.store.profile.signEmpty !== false;
     S.plan = S.signed ? signPlan(S.store.profile, S.layout) : null;
     S.hosted = S.plan && S.store.profile.hostActions !== false ? S.plan.hosted : new Map();
@@ -275,11 +211,7 @@
             S.sigs.push(Object.assign(base, { kind: 'keys', steps, signed: sg }));
           }
         } else if (a.t === 'media') {
-          if (S.volumeAsKey && VOL_KEY[a.usage]) {
-            S.sigs.push(Object.assign({}, base, { kind: 'keys', steps: sigSteps(id, li + 1).concat([{ vk: VOL_KEY[a.usage], mods: 0 }]), signed: true }));
-          }
-          // anche come evento media: Windows scarta i codici tastiera di volume, quindi se il pad è stato riportato al
-          // tipo media (o l'opzione è spenta) il controllo si riconosce dall'evento media + layer + durata
+          // Windows scarta i codici tastiera di volume (0x7F–0x81): il controllo media si riconosce dall'evento media + layer + durata
           S.sigs.push(Object.assign({}, base, { kind: 'media', usage: a.usage }));
         } else if (a.t === 'mouse') {
           if (a.wheel) S.sigs.push(Object.assign(base, { kind: 'wheel', dir: Math.sign(a.wheel), mods: hidMask(a.mod || 0) }));
@@ -310,7 +242,8 @@
     const c = lay && lay.led && lay.led.color;
     const m = lay && lay.led ? lay.led.mode : 1;
     if (m === 5) return { css: LED_CSS[0], name: 'Bianco' };           // "Tutti bianchi": il colore scelto non conta
-    return typeof c === 'number' && LED_CSS[c] ? { css: LED_CSS[c], name: LED_NAME[c] } : { css: LED_DEFAULT[L - 1] || LED_DEFAULT[1], name: L === 1 ? 'Verde' : 'Bianco' };
+    if (typeof c === 'number' && LED_CSS[c]) return { css: LED_CSS[c], name: LED_NAME[c] };
+    return { css: LED_DEFAULT[L - 1] || LED_DEFAULT[1], name: L === 1 ? 'Verde' : 'Bianco' };   // di fabbrica: layer 1 verde, 2 e 3 bianchi
   }
 
   /* ---------- 1: sfondo ambientale ----------
@@ -883,17 +816,15 @@
   const TURN_MAX_MS = 20, PENDING_MS = 30;
   /* Timer di attesa con tolleranza: se il thread era occupato e il timer scatta in ritardo, i messaggi del ponte già
      arrivati potrebbero non essere ancora stati elaborati → si concede una seconda attesa breve. */
+  const GRACE_MS = 20, LATE_MS = 10;
   function pendingTimer(fn) {
-    const hd = { id: 0 };
+    const handle = { id: 0 };
     const due = performance.now() + PENDING_MS;
-    const arm = (grace) => {
-      hd.id = setTimeout(() => {
-        if (!grace && performance.now() - due > 10) { arm(true); return; }
-        fn();
-      }, grace ? 20 : PENDING_MS);
-    };
-    arm(false);
-    return hd;
+    handle.id = setTimeout(() => {
+      if (performance.now() - due <= LATE_MS) { fn(); return; }              // puntuale: si decide ora
+      handle.id = setTimeout(fn, GRACE_MS);                                   // in ritardo: un'ultima attesa breve
+    }, PENDING_MS);
+    return handle;
   }
   const roleOf = (id) => isTurn(ctrl.get(id)) ? 'turn' : 'hold';
   const needsTiming = (hits) => new Set(hits.map((x) => roleOf(x.id))).size > 1;
@@ -1130,16 +1061,22 @@
     const p = S.store.profile;
     const signature = !!p.signature;
     const plan = signature ? MP.signPlan(p, S.layout) : null;
-    return { mouseAlt: !!S.layout.mouseAlt, signature, volumeAsKey: !!p.volumeAsKey, signEmpty: signature && p.signEmpty !== false, plan,
+    return { signature, signEmpty: signature && p.signEmpty !== false, plan,
       hosted: plan && p.hostActions !== false ? plan.hosted : null };
   }
   const allIds = () => [...S.layout.keys, ...S.layout.knobs.flat()];
-  /* pacchetti di un controllo (senza "azzera"), in esadecimale; 'ERR' se non codificabile (es. macro troppo lunga) */
+  /* pacchetti di un controllo (senza "azzera"), in esadecimale; UNENCODABLE se non codificabile (es. macro troppo lunga):
+     il motivo resta in encodeErrors e viene mostrato al momento dell'invio */
+  const UNENCODABLE = '!non-codificabile';
+  const encodeErrors = new Map();          // "layer:id" → messaggio dell'errore del protocollo
   function controlHex(o, L, id) {
+    const key = L + ':' + id;
     try {
       const a = S.store.profile.layers[L - 1].controls[id] || null;
-      return MP.encodeActionFrames(id, L, a, o).map((b) => MP.hex(b)).join('|');
-    } catch (_) { return 'ERR'; }
+      const hex = MP.encodeActionFrames(id, L, a, o).map((b) => MP.hex(b)).join('|');
+      encodeErrors.delete(key);
+      return hex;
+    } catch (err) { encodeErrors.set(key, err.message); return UNENCODABLE; }
   }
   function frameHexMap() {
     const o = encOpts(), out = {};
@@ -1150,11 +1087,11 @@
     }
     return out;
   }
-  const readSent = () => { try { return JSON.parse(localStorage.getItem(SENT_KEY) || 'null'); } catch (_) { return null; } };
-  const writeSent = (m) => { try { localStorage.setItem(SENT_KEY, JSON.stringify(m)); } catch (_) { /* storage non disponibile */ } };
+  const readSent = () => storage.read(SENT_KEY);
+  const writeSent = (m) => storage.write(SENT_KEY, m);
   /* controlli il cui codice è cambiato dall'ultimo invio. Al primo uso si assume che il pad coincida col profilo. */
   function updatePending(init) {
-    if (!MP || !S.store) { SEND.pending = []; paintSendChip(); return; }
+    if (!S.store) { SEND.pending = []; paintSendChip(); return; }
     const cur = frameHexMap();
     let snap = readSent();
     if (!snap) { if (!init) snap = {}; else { writeSent(cur); snap = cur; } }
@@ -1173,10 +1110,9 @@
     c.className = 'chip clickable ' + (n ? 'warn' : 'ok');
     c.lastElementChild.textContent = n ? 'Da inviare al pad · ' + n : 'Pad aggiornato';
     c.title = n ? 'Ci sono controlli modificati non ancora scritti sul macropad. Clicca per inviarli.' : 'Il profilo coincide con quanto inviato al pad.';
-    c.hidden = !MP;
   }
   function commit() {
-    try { localStorage.setItem(STORE, JSON.stringify({ profile: S.store.profile, layout: S.store.layout || S.layout })); } catch (_) { /* storage non disponibile */ }
+    storage.write(STORE, { profile: S.store.profile, layout: S.store.layout || S.layout });
     load(); paintLabels(); pushHostmap(false); updatePending();
   }
 
@@ -1425,7 +1361,7 @@
       const fr = framesFor(L, id);
       kids.push(el('details', { class: 'dtl' }, el('summary', {}, 'Dettagli tecnici'),
         el('pre', {}, fr.map((f) => f.label + '\n' + MP.hex(f.bytes, 0, 24) + ' …').join('\n\n'))));
-    } catch (_) { /* macro non codificabile: l'avviso è già nell'editor */ }
+    } catch (err) { kids.push(el('p', { class: 'hintx' }, 'Dettagli tecnici non disponibili: ' + err.message)); }
     const n = SEND.pending.length;
     const send = btn(n ? 'Invia al pad · ' + n : 'Pad aggiornato', 'pbtn', () => openSend(), n ? {} : { disabled: '' });
     // il contenuto scorre da solo (senza barre visibili) se la finestra è bassa; intestazione e piede restano fissi
@@ -1470,7 +1406,7 @@
     const cur = frameHexMap();
     const frames = [];
     for (const k of keys) {
-      if (cur[k] === 'ERR') throw new Error('«' + pendingName(k) + '» non è codificabile (macro troppo lunga?).');
+      if (cur[k] === UNENCODABLE) throw new Error('«' + pendingName(k) + '» non è codificabile: ' + (encodeErrors.get(k) || 'errore sconosciuto') + '.');
       if (k.startsWith('led:')) {
         const L = Number(k.slice(4)), led = S.store.profile.layers[L - 1].led;
         if (led) frames.push({ label: 'LED · L' + L, bytes: MP.led(L, led.color, led.mode) });
@@ -1573,7 +1509,7 @@
   function renderSend() {
     const box = $('#send');
     closeDropdowns();
-    if (!MP || !S.store) { box.hidden = true; return; }
+    if (!S.store) { box.hidden = true; return; }
     const n = SEND.pending.length;
     const st = linkState();
     const connected = !!(SEND.dev && SEND.dev.opened);
@@ -1630,7 +1566,6 @@
     return led && typeof led.color === 'number' ? { color: led.color, mode: led.mode | 0, set: true } : { color: L === 1 ? 4 : 0, mode: 1, set: false };
   };
   function openLeds() {
-    if (!MP) return;
     ensureStore();
     LEDE.layer = shownLayer();
     SEND.msg = ''; SEND.err = false; SEND.done = false;
@@ -1647,7 +1582,7 @@
   function renderLeds() {
     const box = $('#leds');
     closeDropdowns();
-    if (!MP || !S.store) { box.hidden = true; return; }
+    if (!S.store) { box.hidden = true; return; }
     const L = LEDE.layer || shownLayer();
     const cur = ledOf(L);
     const key = 'led:' + L;
@@ -1732,7 +1667,6 @@
   }
   const SETT = { msg: '', err: false };
   function openSettings() {
-    if (!MP) return;
     ensureStore();
     SETT.msg = ''; SETT.err = false;
     hideSheets('#settings');
@@ -1743,7 +1677,7 @@
   function renderSettings() {
     const box = $('#settings');
     closeDropdowns();
-    if (!MP || !S.store) { box.hidden = true; return; }
+    if (!S.store) { box.hidden = true; return; }
     const p = S.store.profile;
     const set = (k, v) => { p[k] = v; if (!p.signature) p.signAll = false; commit(); renderSettings(); };
     const sigOn = !!p.signature;
@@ -1860,7 +1794,7 @@
   function renderInspector() {
     closeDropdowns();
     if (!S.sel) { card.classList.remove('in'); card.hidden = true; $('#link path').setAttribute('d', ''); $('#link circle').setAttribute('cx', -10); return; }
-    if (S.edit && MP) { renderEditor(); return; }
+    if (S.edit) { renderEditor(); return; }
     const L = shownLayer();
     const dups = dupGroups(L);
     let kicker, title, body, ids;
@@ -1907,7 +1841,6 @@
       el('div', { class: 'cscroll' }, ...body, ...notes),
       el('div', { class: 'foot' }, el('span', { class: 'micro' }, 'Layer ' + L), (() => {
         const b = el('button', { type: 'button', class: 'pbtn' }, 'Modifica');
-        if (!MP) { b.setAttribute('disabled', ''); b.title = 'Il modulo di protocollo non è stato caricato (apri la pagina da http://localhost:5173).'; }
         b.addEventListener('click', () => enterEdit());
         return b;
       })()));
@@ -2040,14 +1973,13 @@
   function connectBridge() {
     try { es = new EventSource(BRIDGE + '/events'); } catch (_) { setTimeout(connectBridge, 4000); return; }
     es.addEventListener('hello', (e) => {
-      let d = null;
-      try { d = JSON.parse(e.data); } catch (_) { /* ponte molto vecchio */ }
+      const d = parseJSON(e.data, 'messaggio hello del ponte illeggibile (ponte molto vecchio?)');
       S.bridge = true; S.precise = !!(d && d.precise); S.hostCap = !!(d && d.host);
       S.linkCap = !!(d && d.link); S.link = { usb: !!(d && d.usb), ble: !!(d && d.ble) };
       chips(); paintLink();
       pushHostmap(true);
     });
-    es.onmessage = (m) => { try { onEvent(JSON.parse(m.data)); } catch (_) { /* riga non valida */ } };
+    es.onmessage = (m) => { const ev = parseJSON(m.data, 'evento del ponte non valido'); if (ev) onEvent(ev); };
     es.onerror = () => { S.bridge = false; S.precise = false; S.hostCap = false; S.hostOk = null; S.linkCap = false; chips(); paintLink(); es.close(); setTimeout(connectBridge, 3000); };
   }
   function pageKey(e, down) {

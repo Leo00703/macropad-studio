@@ -3,9 +3,20 @@
    Forma: IIFE con dichiarazioni `function` (leggibili anche dagli strumenti AST) che espone il modulo come globalThis.MP. */
 (function (root) {
   'use strict';
+  /* Forme dei dati (solo documentazione, nessun controllo a runtime)
+     @typedef {{ mod?: number, key?: number }} Step               una pressione: bitmask dei modificatori HID + usage tastiera
+     @typedef {{ t: 'keys', steps: Step[], delay?: number, delayReset?: boolean, hold?: 'repeat'|'once', sign?: 'on'|'off' }} KeysAction
+     @typedef {{ t: 'media', usage: number, hold?: 'repeat'|'once' }} MediaAction
+     @typedef {{ t: 'mouse', buttons?: number, wheel?: number, mod?: number, hold?: 'repeat'|'once' }} MouseAction
+     @typedef {{ t: 'clear' }} ClearAction                          "Disattiva": il controllo non emette nulla
+     @typedef {KeysAction|MediaAction|MouseAction|ClearAction} Action
+     @typedef {{ controls: Object<number, Action>, led?: { color: number, mode: number } }} Layer
+     @typedef {{ layers: Layer[], signature?: boolean, signAll?: boolean, signEmpty?: boolean, hostActions?: boolean, repeat?: { delay?: number, rate?: number } }} Profile
+     @typedef {{ keys: number[], knobs: number[][] }} Layout   ID dei 9 tasti e dei 3 × 3 controlli delle manopole
+     @typedef {{ signature?: boolean, signEmpty?: boolean,
+                 plan?: { keys: Set<string> }, hosted?: Map<string, object> }} EncodeOptions   chiavi dei Set/Map = "layer:id" */
   const VENDOR_ID = 0x1189;
   const VERIFIED_PIDS = [0x8833];                    // PID per cui la decompilazione dell'app ufficiale è stata verificata
-  const FAMILY_PIDS = [0x8830, 0x8831, 0x8832, 0x8833];
   const REPORT_ID = 3;
   const PAYLOAD_LEN = 64;
   const CMD_BIND = 0xFE;
@@ -65,26 +76,20 @@
   function media(id, layer, usage) {
     return frame(id, layer, TYPE.MEDIA, 0, usage > 0xFF ? [0, usage & 0xFF, usage >> 8] : [0, usage]);
   }
-  /* alt=false: posizioni dell'app ufficiale [0, bottoni, 0, 0, rotella, mod]; alt=true: variante di rOzzy1987
-     [bottoni, 0, 0, rotella, mod] (un byte prima). Va scelta in base a ciò che il pad fa davvero. */
-  function mouse(id, layer, m, alt = false) {
-    if (!alt) return frame(id, layer, TYPE.MOUSE, 0, [0, m.buttons || 0, 0, 0, (m.wheel || 0) & 0xFF, m.mod || 0]);
-    /* variante rOzzy1987: count = (indice dell'ultimo byte non nullo >> 1) + 1, contando anche il primo byte */
-    const p = [m.buttons || 0, 0, 0, (m.wheel || 0) & 0xFF, m.mod || 0];
-    let last = -1;
-    for (let i = 0; i < p.length; i++) if (p[i]) last = i;
-    return frame(id, layer, TYPE.MOUSE, 0, p, last < 0 ? 0 : (last >> 1) + 1);
+  /* posizioni dell'app ufficiale, verificate sul pad: [0, bottoni, 0, 0, rotella, modificatori] */
+  function mouse(id, layer, m) {
+    return frame(id, layer, TYPE.MOUSE, 0, [0, m.buttons || 0, 0, 0, (m.wheel || 0) & 0xFF, m.mod || 0]);
   }
   function led(layer, color, mode) {
     return frame(LED_ID, layer, TYPE.LED, 0, [layer, ((color & 0x0F) << 4) | (mode & 0x0F)]);
   }
   function clear(id, layer) { return frame(id, layer, TYPE.CLEAR, 0, []); }
 
-  function encodeAction(id, layer, a, opts) {
+  function encodeAction(id, layer, a) {
     switch (a && a.t) {
       case 'keys': return keys(id, layer, a.steps || []);
       case 'media': return media(id, layer, a.usage);
-      case 'mouse': return mouse(id, layer, a, !!(opts && opts.mouseAlt));
+      case 'mouse': return mouse(id, layer, a);
       case 'clear': return clear(id, layer);
       default: return null;
     }
@@ -94,9 +99,8 @@
      Due tasti F13–F21 in TESTA alla macro codificano (layer, controllo): n = (layer−1)·24 + (id−1) ∈ 0…71, in base 9
      → F13+⌊n/9⌋, F13+n%9. Nessuna app li usa; la vista live li legge e sa quale controllo e quale layer sono, anche
      con azioni identiche. Poiché la macro è memorizzata nel pad, funziona in USB e in Bluetooth.
-     Solo per i controlli di tipo tastiera (e, se richiesto, Volume/Muto come tasti tastiera 0x7F–0x81). */
+     Solo per i controlli di tipo tastiera: Volume/Muto come usage tastiera 0x7F–0x81 non funzionano (Windows li scarta). */
   const SIG = Object.freeze({ BASE: 0x68, RADIX: 9, STEPS: 2 });
-  const VOLUME_AS_KEY = Object.freeze({ 0xE2: 0x7F, 0xE9: 0x80, 0xEA: 0x81 });   // Muto, Volume +, Volume −
   function signatureKeys(controlId, layer) {
     if (!isControlId(controlId)) throw new RangeError('ID controllo non valido: ' + controlId);
     if (!Number.isInteger(layer) || layer < 1 || layer > LIMITS.layers) throw new RangeError('Il layer deve essere 1, 2 o 3');
@@ -141,18 +145,16 @@
     }
     // azione media/mouse duplicata: il pad invia SOLO la firma e la esegue il ponte sul PC (vedi hostedControls)
     if (opts.hosted && opts.hosted.has(layer + ':' + id) && (a.t === 'media' || a.t === 'mouse')) return { t: 'media', usage: sensorUsage(id, layer) };
-    if (a.t === 'media' && opts.volumeAsKey && VOLUME_AS_KEY[a.usage]) {
-      return { t: 'keys', steps: sig.concat([{ mod: 0, key: VOLUME_AS_KEY[a.usage] }]), delay: 0 };
-    }
     return a;
   }
   /* true se il controllo, con queste opzioni, emette una firma (id/layer servono per i controlli "eseguiti dal PC") */
   function isSigned(a, opts, id, layer) {
-    return !!(opts && opts.signature && (a
-      ? ((a.t === 'keys' && (a.steps || []).length && (!opts.plan || id == null || opts.plan.keys.has(layer + ':' + id))) ||
-         (a.t === 'media' && opts.volumeAsKey && VOLUME_AS_KEY[a.usage]) ||
-         (opts.hosted && id != null && opts.hosted.has(layer + ':' + id)))
-      : opts.signEmpty));
+    if (!opts || !opts.signature) return false;
+    if (!a) return !!opts.signEmpty;                                              // controllo vuoto: emette l'identità "sensore"
+    const key = layer + ':' + id;
+    const signsKeys = a.t === 'keys' && (a.steps || []).length > 0 && (!opts.plan || id == null || opts.plan.keys.has(key));
+    const signsHosted = !!(opts.hosted && id != null && opts.hosted.has(key));   // media/mouse eseguiti dal ponte: solo identità
+    return signsKeys || signsHosted;
   }
 
   /* ---- azioni "eseguite dal PC" ----
@@ -161,7 +163,7 @@
      (silenzioso) passerebbe inosservato. Soluzione: per ogni gruppo di azioni identiche UN controllo resta nativo (il pad
      la esegue da solo e, essendo l'unico a emettere quell'evento, è univoco anche per layer); gli altri inviano SOLO la
      firma e l'azione la esegue il ponte sul PC (tools/PadBridge.ps1, endpoint /hostmap).
-     Stessa logica in app/live.html (hostedControls): un test verifica che coincidano. */
+     La vista live (live.js) usa direttamente MP.hostedControls: la logica esiste in un solo posto. */
   const HOST_VK = Object.freeze({ 0xE2: 0xAD, 0xEA: 0xAE, 0xE9: 0xAF, 0xB5: 0xB0, 0xB6: 0xB1, 0xB7: 0xB2, 0xCD: 0xB3,
     0x18A: 0xB4, 0x183: 0xB5, 0x192: 0xB7, 0x221: 0xAA, 0x223: 0xAC, 0x224: 0xA6, 0x225: 0xA7, 0x226: 0xA9, 0x227: 0xA8, 0x22A: 0xAB });
   function hostAction(a) {
@@ -209,7 +211,7 @@
      in QUALUNQUE layer (stessa sequenza, oppure una è l'inizio dell'altra). Gli altri restano "normali": un tasto a una
      coppia segue la mano (tenuta, ripetizione) e la vista live lo riconosce — e ne deduce il layer — dall'azione stessa.
      Per controllo: a.sign = 'on' (sempre) | 'off' (mai); assente = automatico. profile.signAll firma tutto.
-     Stessa logica in app/live.html (signPlan): un test verifica che coincidano. */
+     La vista live (live.js) usa direttamente MP.signPlan: la logica esiste in un solo posto. */
   function normMod(m) { return ((m || 0) | ((m || 0) >> 4)) & 0x0F; }          // sinistra/destra equivalenti
   function seqOf(a) { return (a.steps || []).filter((st) => st.key).map((st) => normMod(st.mod) + ':' + st.key); }
   function seqClash(x, y) {
@@ -323,10 +325,11 @@
   }
 
   root.MP = Object.freeze({
-    VENDOR_ID, VERIFIED_PIDS, FAMILY_PIDS, REPORT_ID, PAYLOAD_LEN, CMD_BIND, LED_ID, TYPE, MOD, LIMITS, KNOB_BASE, MOUSE_BTN,
+    VENDOR_ID, VERIFIED_PIDS, REPORT_ID, PAYLOAD_LEN, CMD_BIND, LED_ID, TYPE, MOD, LIMITS, KNOB_BASE, MOUSE_BTN,
     MEDIA, LED_COLORS, KEY_LABELS, OFFICIAL_USAGES, CODE_TO_USAGE, CODE_TO_MOD,
     isControlId, knobId, pairCount, frame, keys, delay, media, mouse, led, clear, encodeAction, encodeActionFrames,
-    SIG, VOLUME_AS_KEY, signatureKeys, decodeSignature, SENSOR_USAGES, sensorUsage, decodeSensor, withSignature, isSigned, HOST_VK, hostAction, hostedControls, repeatOf, signPlan,
+    SIG, signatureKeys, decodeSignature, SENSOR_USAGES, sensorUsage, decodeSensor, withSignature, isSigned, HOST_VK, hostAction, hostedControls, repeatOf, signPlan,
     modLabel, keyLabel, stepLabel, textToSteps, hex,
   });
+  if (typeof module !== 'undefined' && module.exports) module.exports = root.MP;   // Node: test e strumenti da riga di comando
 })(typeof globalThis !== 'undefined' ? globalThis : this);

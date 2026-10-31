@@ -136,7 +136,7 @@ foreach ($f in $json.frames) {
   if ($b[0] -ne 0xFE) { Write-Output ('ERRORE: pacchetto "{0}" non inizia con 0xFE' -f $f.label); exit 1 }
   $frames.Add($b)
 }
-Write-Output ('Pacchetti da inviare: {0}   (opzioni: firma={1}, volume come tasti={2})' -f $frames.Count, $json.options.signature, $json.options.volumeAsKey)
+Write-Output ('Pacchetti da inviare: {0}   (opzioni: firma={1})' -f $frames.Count, $json.options.signature)
 if (-not $Write) {
   Write-Output 'PROVA A SECCO: nessuna scrittura. Elenco:'
   foreach ($f in $json.frames) { Write-Output ('  {0}   {1} …' -f $f.label, ($f.hex.Substring(0, 35))) }

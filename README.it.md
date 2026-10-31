@@ -6,7 +6,7 @@
 Niente software del produttore, niente installazione, nessuna dipendenza: una pagina web che parla con il pad via WebHID,
 più un piccolo ponte opzionale per Windows che distingue il pad dalla tua tastiera.
 
-[![Test](https://img.shields.io/badge/test-54%20superati-brightgreen)](app/test/protocol.test.js)
+[![Test](https://github.com/Leo00703/macropad-studio/actions/workflows/test.yml/badge.svg)](https://github.com/Leo00703/macropad-studio/actions/workflows/test.yml)
 [![Licenza: MIT](https://img.shields.io/badge/licenza-MIT-blue.svg)](LICENSE)
 ![Dipendenze: nessuna](https://img.shields.io/badge/dipendenze-nessuna-lightgrey)
 
@@ -127,12 +127,12 @@ flowchart LR
 ## Sviluppo
 
 ```bash
-node app/test/protocol.test.js        # 54 test: esempi del protocollo, piano di firma, azioni dal PC, coerenza live.js ↔ protocol.js
+node app/test/protocol.test.js        # esempi del protocollo, piano di firma, azioni dal PC, guardia "una sola copia" per live.js
 node tools/profile-frames.js app/profiles/diagnostico-layer1.json   # profilo → pacchetti, senza dispositivo
 ```
 
-* `app/protocol.js` è puro (niente DOM, niente HID) ed è l'unica fonte per la codifica. Un piccolo blocco è duplicato di proposito
-  in `live.js` (`HOSTED-BEGIN … HOSTED-END`): un test li confronta, quindi vanno cambiati insieme.
+* `app/protocol.js` è puro (niente DOM, niente HID) ed è l'unica fonte per codifica, firma e azioni eseguite dal PC;
+  `live.js` lo usa tramite il globale `MP` e non deve averne una copia (un test lo verifica).
 * Le pull request che toccano il protocollo dovrebbero includere i pacchetti esadecimali e, se possibile, cosa è stato osservato su un pad reale.
 * [`CLAUDE.md`](CLAUDE.md) contiene brevi note di lavoro per gli agenti di programmazione AI (e una mappa del repository).
 
