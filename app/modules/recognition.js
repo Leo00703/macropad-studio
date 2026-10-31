@@ -1,11 +1,11 @@
 /* recognition.js — riconoscimento degli eventi del pad (tasti, media, rotella, pulsanti). */
 import { paintLink } from './bridge.js';
 import { trace } from './diag.js';
-import { btn } from './dom.js';
 import { MEDIA_NAME, isSigVk, modBit, modLabel, vkName } from './keymap.js';
 import { isTurn, setDetected, shownLayer } from './labels.js';
+import { chooseLayer, hitsInLayer, matchKeySignatures } from './matching.js';
 import { clearChannel, press, release } from './press.js';
-import { S, ctrl } from './state.js';
+import { ctrl, state } from './state.js';
 import { note, showTags } from './tags.js';
 
 /* ---------- riconoscimento degli eventi ---------- */
@@ -13,37 +13,33 @@ import { note, showTags } from './tags.js';
    firmato, o un'azione presente in un solo layer) lo stabilisce. Un evento ambiguo tra più layer si risolve con il
    layer fisico già noto — NON con quello visualizzato — e solo in mancanza si usa il layer scelto dall'utente. */
 function learnLayer(n) {
-  S.padLayer = n; S.padKnown = true;
-  if (S.layerMode === 'auto') setDetected(n);
+  state.padLayer = n; state.padKnown = true;
+  if (state.layerMode === 'auto') setDetected(n);
 }
 export function pick(cands) {
   if (!cands.length) return { hits: [], layer: shownLayer() };
   const layers = [...new Set(cands.map((c) => c.layer))];
-  let use = cands, layer;
-  if (layers.length === 1) { layer = layers[0]; learnLayer(layer); }
-  else if (S.padKnown && layers.includes(S.padLayer)) layer = S.padLayer;
-  else if (S.layerMode !== 'auto' && layers.includes(S.layerMode)) layer = S.layerMode;       // suggerimento dell'utente
-  else if (layers.includes(S.detected)) layer = S.detected;
-  else layer = layers[0];
-  use = cands.filter((c) => c.layer === layer);
-  const ids = [...new Set(use.map((c) => c.id))];
-  return { hits: ids.map((id) => ({ id, maybe: ids.length > 1 })), layer, sig: use[0] };
+  const layer = chooseLayer(layers, state);
+  if (layers.length === 1) learnLayer(layer);
+  return Object.assign(hitsInLayer(cands, layer), { layer });
 }
 
 /* Tastiera: più sequenze in parallelo (due controlli premuti insieme non si confondono).
    Ogni sequenza è un possibile "macro" in corso: tasti ricevuti finora + tasti ancora giù. */
-let streams = [], streamSeq = 0;
-const matchSeq = (seq) => S.sigs.filter((s) => s.kind === 'keys' && seq.length <= s.steps.length &&
-  seq.every((b, i) => s.steps[i].vk === b.vk && s.steps[i].mods === b.mods));
+let streams = [];
+let streamSeq = 0;
+const matchSeq = (seq) => matchKeySignatures(state.sigs, seq);
 const seqName = (seq) => seq.map((b) => (modLabel(b.mods) ? modLabel(b.mods) + '+' : '') + vkName(b.vk)).join(' ');
 /* Disambiguazione per durata: una ROTAZIONE della manopola ha pressione e rilascio nello stesso istante, un tasto o
    la pressione della manopola restano giù almeno ~60 ms (osservato: 78–170 ms). Il ponte usa un orologio ad alta
    risoluzione (QueryPerformanceCounter); con quello vecchio, a passi di 15,6 ms, 20 ms copre comunque un passo.
    Si applica solo quando la stessa azione è su controlli di ruolo diverso (es. Volume − su tasto 4 e su manopola ↺). */
-const TURN_MAX_MS = 20, PENDING_MS = 30;
+const TURN_MAX_MS = 20;
+const PENDING_MS = 30;
 /* Timer di attesa con tolleranza: se il thread era occupato e il timer scatta in ritardo, i messaggi del ponte già
    arrivati potrebbero non essere ancora stati elaborati → si concede una seconda attesa breve. */
-const GRACE_MS = 20, LATE_MS = 10;
+const GRACE_MS = 20;
+const LATE_MS = 10;
 function pendingTimer(fn) {
   const handle = { id: 0 };
   const due = performance.now() + PENDING_MS;
@@ -72,7 +68,7 @@ function resolveStream(st, role) {
   st.matched = true; st.noted = true;
 }
 function updateStream(st, announce) {
-  if (S.signed && st.seq.length < 2 && st.seq.every((b) => isSigVk(b.vk))) return;     // firma a metà: manca il secondo tasto
+  if (state.signed && st.seq.length < 2 && st.seq.every((b) => isSigVk(b.vk))) return;     // firma a metà: manca il secondo tasto
   const p = pick(matchSeq(st.seq));
   if (!p.hits.length) return;
   if (st.seq.length === 1 && needsTiming(p.hits)) {          // aspetta di sapere se è un impulso o una pressione
@@ -97,14 +93,14 @@ function endStream(st) {                 // idempotente
 }
 export function keyEvent(vk, down, t) {
   const m = modBit(vk);
-  if (m) { S.modState = down ? (S.modState | m) : (S.modState & ~m); return; }
+  if (m) { state.modState = down ? (state.modState | m) : (state.modState & ~m); return; }
   if (down) {
     /* La fine di una sequenza si decide dai TIMESTAMP degli eventi (orologio del ponte), non dai timer della pagina:
        se il thread è occupato (animazioni, sfondo) un timer può scattare prima che i messaggi in coda siano stati
        letti e spezzare una firma a metà. I timer restano solo come pulizia tardiva. */
     for (const st of streams.slice()) if (!st.held.size && st.lastT != null && t - st.lastT > st.gap) endStream(st);
     for (const st of streams) if (st.held.has(vk)) return;                       // autoripetizione
-    const ev = { vk, mods: S.modState };
+    const ev = { vk, mods: state.modState };
     for (const st of streams) {                                                   // 1) prosegue una sequenza esistente
       if (matchSeq(st.seq.concat([ev])).length) {
         clearTimeout(st.timer);
@@ -147,7 +143,7 @@ function resolveMedia(role) {
 export function mediaEvent(usage, down, t) {
   if (down) {
     if (mediaPend) resolveMedia('hold');                     // il rilascio precedente non è mai arrivato
-    const p = pick(S.sigs.filter((s) => s.kind === 'media' && s.usage === usage));
+    const p = pick(state.sigs.filter((s) => s.kind === 'media' && s.usage === usage));
     if (!p.hits.length) { clearChannel('media'); note(null, MEDIA_NAME[usage] || 'Media 0x' + usage.toString(16)); return; }
     if (needsTiming(p.hits)) {
       mediaPend = { p, t0: t, timer: pendingTimer(() => resolveMedia('hold')) };
@@ -162,24 +158,24 @@ export function mediaEvent(usage, down, t) {
 /* La rotella del mouse è un impulso, senza "rilascio": un tasto tenuto la ripete. Il primo impulso mostra
    il tasto premuto per un attimo; se ne arriva un altro entro 700 ms si considera "tenuto" e resta premuto finché
    gli impulsi continuano (finestra = 1,8 × l'intervallo osservato, almeno 250 ms). */
-export const wheel = { key: '', last: 0, timer: 0 };
+export const wheelPulse = { key: '', last: 0, timer: 0 };
 export function wheelEvent(dir) {
-  const p = pick(S.sigs.filter((s) => s.kind === 'wheel' && s.dir === dir && s.mods === (S.modState & 7)));
-  if (!p.hits.length) { note(null, 'Rotella ' + (dir > 0 ? '↑' : '↓') + (S.modState & 7 ? ' con ' + modLabel(S.modState & 7) : '')); return; }
+  const p = pick(state.sigs.filter((s) => s.kind === 'wheel' && s.dir === dir && s.mods === (state.modState & 7)));
+  if (!p.hits.length) { note(null, 'Rotella ' + (dir > 0 ? '↑' : '↓') + (state.modState & 7 ? ' con ' + modLabel(state.modState & 7) : '')); return; }
   const key = p.hits.map((x) => x.id).join(',');
   const now = performance.now();
-  const gap = now - wheel.last;
-  const held = wheel.timer && wheel.key === key;          // la finestra precedente non è ancora scaduta
-  clearTimeout(wheel.timer);
-  wheel.key = key; wheel.last = now;
+  const gap = now - wheelPulse.last;
+  const held = wheelPulse.timer && wheelPulse.key === key;          // la finestra precedente non è ancora scaduta
+  clearTimeout(wheelPulse.timer);
+  wheelPulse.key = key; wheelPulse.last = now;
   press('wheel', p.hits, true);
   if (!held) note(p, null); else showTags(p);
   const win = held ? Math.min(900, Math.max(250, gap * 1.8)) : 250;
-  wheel.timer = setTimeout(() => { wheel.timer = 0; clearChannel('wheel'); }, win);
+  wheelPulse.timer = setTimeout(() => { wheelPulse.timer = 0; clearChannel('wheel'); }, win);
 }
 function buttonEvent(b, down) {
   if (!down) { release('btn'); return; }
-  const p = pick(S.sigs.filter((s) => s.kind === 'button' && s.button === b));
+  const p = pick(state.sigs.filter((s) => s.kind === 'button' && s.button === b));
   if (p.hits.length) { press('btn', p.hits); note(p, null); } else note(null, 'Pulsante ' + b);
 }
 
@@ -191,5 +187,5 @@ export function onEvent(ev) {
   else if (ev.type === 'media') mediaEvent(ev.usage, !!ev.down, t);
   else if (ev.type === 'wheel') wheelEvent(ev.delta > 0 ? 1 : -1);
   else if (ev.type === 'button') buttonEvent(ev.button, !!ev.down);
-  else if (ev.type === 'status') { S.link = { usb: !!ev.usb, ble: !!ev.ble }; S.linkCap = true; paintLink(); }
+  else if (ev.type === 'status') { state.link = { usb: !!ev.usb, ble: !!ev.ble }; state.linkCap = true; paintLink(); }
 }

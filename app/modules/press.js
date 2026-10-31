@@ -1,8 +1,7 @@
 /* press.js — stati di pressione e rotazione dei controlli. */
-import { $ } from './dom.js';
 import { MIN_SHOW, isTurn } from './labels.js';
 import { ripple } from './pad.js';
-import { S, ctrl, knobAngle } from './state.js';
+import { ctrl, knobAngle, state } from './state.js';
 
 export const live = {};        // canale → { ids:Set, since }   (un canale = una sorgente: tastiera, media, rotella…)
 /* Le classi "premuto" si DERIVANO dai canali attivi a ogni cambio: nessun controllo può restare bloccato.
@@ -42,7 +41,7 @@ export function release(ch, force, minWait) {
 const turnTimer = [null, null, null];
 export function rotate(k, dir) {
   knobAngle[k] += dir * 18;
-  S.rotCount[k]++;                                  // contatore per le verifiche (nessun effetto sull'interfaccia)
+  state.rotCount[k]++;                                  // contatore per le verifiche (nessun effetto sull'interfaccia)
   const any = [...ctrl.values()].find((c) => c.kind === 'knob' && c.knob === k);
   if (!any) return;
   for (const s of any.spin) s.style.transform = `rotate(${knobAngle[k]}deg)`;

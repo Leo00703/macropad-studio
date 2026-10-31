@@ -5,7 +5,8 @@
    Sagoma: blocco tasti 1297 × 815 con angolo alto‑destra r=220, raccordo concavo r=140 e "coda" a capsula (r=200)
    attorno alla manopola grande. Le basi dei tasti sono quelle viste dall'alto (i cappucci sono in prospettiva). */
 export const OUTLINE = 'M65 0H1077A220 220 0 0 1 1297 220V1152A200 200 0 0 1 897 1152V955A140 140 0 0 0 757 815H65A65 65 0 0 1 0 750V65A65 65 0 0 1 65 0Z';
-export const KEY_X = [199, 441, 681], KEY_Y = [137, 389, 639];
+export const KEY_X = [199, 441, 681];
+export const KEY_Y = [137, 389, 639];
 export const KNOBS = [
   { x: 1097, y: 212, disc: 106, ring: 109, sk: { dx: 0, dy: 4, r: 119 }, hl: -50, mark: { a: -90, r0: 62, r1: 103, w: 9 } },
   { x: 1097, y: 614, disc: 106, ring: 109, sk: { dx: 0, dy: 4, r: 119 }, hl: -27, mark: { a: -90, r0: 62, r1: 103, w: 9 } },

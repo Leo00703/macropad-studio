@@ -2,18 +2,18 @@
 import { chips } from './bridge.js';
 import { $, h } from './dom.js';
 import { Bg } from './effects.js';
-import { ICONS } from './icons.js';
+import { ICONS } from './icon-map.js';
 import { renderInspector } from './inspector.js';
-import { KIND_NAME, ledInfo } from './profile.js';
-import { wheel } from './recognition.js';
-import { S, ctrl, knobEl } from './state.js';
+import { ledInfo } from './profile.js';
+import { KIND_NAME } from './signatures.js';
+import { ctrl, knobEl, state } from './state.js';
 
 /* ---------- etichette e layer ---------- */
-export const shownLayer = () => (S.layerMode === 'auto' ? S.detected : S.layerMode);
-export const iconNameFor = (id, L) => { const s = S.sigs.find((x) => x.layer === L && x.id === id); return s && s.icon ? s.icon : null; };
-export const labelFor = (id, L) => { const s = S.sigs.find((x) => x.layer === L && x.id === id); return s ? s.label : ''; };
-export const kindFor = (id, L) => { const s = S.sigs.find((x) => x.layer === L && x.id === id); return s ? (s.empty ? 'Senza azione' : KIND_NAME[s.kind]) : ''; };
-const slotName = (id) => 'Tasto ' + (S.layout.keys.indexOf(id) + 1);
+export const shownLayer = () => (state.layerMode === 'auto' ? state.detected : state.layerMode);
+export const iconNameFor = (id, L) => { const s = state.sigs.find((x) => x.layer === L && x.id === id); return s && s.icon ? s.icon : null; };
+export const labelFor = (id, L) => { const s = state.sigs.find((x) => x.layer === L && x.id === id); return s ? s.label : ''; };
+export const kindFor = (id, L) => { const s = state.sigs.find((x) => x.layer === L && x.id === id); return s ? (s.empty ? 'Senza azione' : KIND_NAME[s.kind]) : ''; };
+const slotName = (id) => 'Tasto ' + (state.layout.keys.indexOf(id) + 1);
 export const NAME = (id) => {
   const c = ctrl.get(id);
   if (!c) return 'Controllo ' + id;
@@ -21,13 +21,14 @@ export const NAME = (id) => {
   return 'Manopola ' + (c.knob + 1) + ' · ' + ['↺', 'premi', '↻'][c.act];
 };
 function setLedColor(css) { document.documentElement.style.setProperty('--led', css); Bg.setLed(css); }
-let glowTimer = 0, lastGlowLayer = 0;
+let glowTimer = 0;
+let lastGlowLayer = 0;
 export function paintLabels() {
   const L = shownLayer();
   for (const c of ctrl.values()) {
     if (c.kind === 'key') {
       const t = labelFor(c.id, L), ic = iconNameFor(c.id, L);
-      const cap = ic ? ((S.sigs.find((x) => x.layer === L && x.id === c.id) || {}).cap || '') : '';
+      const cap = ic ? ((state.sigs.find((x) => x.layer === L && x.id === c.id) || {}).cap || '') : '';
       const short = t.length > 9 ? t.slice(0, 8) + '…' : t;
       c.label.textContent = ic ? cap : short;                        // simbolo al posto del testo, quando c'è (didascalia: modificatori)
       c.icon.replaceChildren();
@@ -38,7 +39,7 @@ export function paintLabels() {
       c.el.setAttribute('aria-label', slotName(c.id) + (t ? ': ' + t : ''));
     }
   }
-  S.layout.knobs.forEach((trio, k) => {
+  state.layout.knobs.forEach((trio, k) => {
     knobEl[k] && knobEl[k].setAttribute('aria-label', 'Manopola ' + (k + 1) + ': ' + trio.map((id, a) => ['sinistra', 'premi', 'destra'][a] + ' ' + (labelFor(id, L) || '—')).join(', '));
   });
   const info = ledInfo(L);
@@ -57,14 +58,14 @@ export function paintLabels() {
     it.lastElementChild.textContent = 'L' + n + ' ' + li.name;
     it.title = 'Layer ' + n + ': LED ' + li.name.toLowerCase();
   });
-  document.querySelectorAll('#layers button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.l === String(S.layerMode))));
-  $('#layers [data-l="auto"]').textContent = S.layerMode === 'auto' ? 'Auto · ' + S.detected : 'Auto';
+  document.querySelectorAll('#layers button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.l === String(state.layerMode))));
+  $('#layers [data-l="auto"]').textContent = state.layerMode === 'auto' ? 'Auto · ' + state.detected : 'Auto';
   chips();
   renderInspector();
 }
 export function setDetected(n) {
-  if (S.detected === n) return;
-  S.detected = n;
+  if (state.detected === n) return;
+  state.detected = n;
   paintLabels();
 }
 
@@ -87,10 +88,10 @@ function eventClash(a, b) {
   if (a.kind === 'button') return a.button === b.button;
   return false;
 }
-export const isUniqueEvent = (x) => !S.sigs.some((o) => o !== x && !(o.layer === x.layer && o.id === x.id) && eventClash(x, o));
+export const isUniqueEvent = (x) => !state.sigs.some((o) => o !== x && !(o.layer === x.layer && o.id === x.id) && eventClash(x, o));
 export function dupGroups(L) {
   const groups = new Map();
-  for (const s of S.sigs) {
+  for (const s of state.sigs) {
     if (s.layer !== L || s.signed) continue;
     const c = ctrl.get(s.id);
     if (!c) continue;

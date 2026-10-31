@@ -1,10 +1,10 @@
 /* pad.js — disegno del pad (SVG) e animazione dei controlli. */
-import { $, el, h } from './dom.js';
+import { $, h } from './dom.js';
 import { Bg, Tex } from './effects.js';
 import { KEY_X, KEY_Y, KNOBS, OUTLINE, SCREWS } from './geometry.js';
 import { attachInteraction } from './inspector.js';
 import { paintLabels } from './labels.js';
-import { S, ctrl, knobEl } from './state.js';
+import { ctrl, knobEl, state } from './state.js';
 
 export function hotOf(c) { return c.el.querySelector(c.kind === 'knob' ? '.n-hot' : '.k-face'); }
 export function ripple(c, s) {
@@ -18,7 +18,7 @@ export function ripple(c, s) {
 const stopsOf = (arr) => arr.map(([o, c, a]) => h('stop', { offset: o, style: 'stop-color:' + c + (a != null ? ';stop-opacity:' + a : '') }));
 export function buildPad() {
   const svg = $('#pad');
-  S.sel = null;
+  state.sel = null;
   svg.replaceChildren();
   const pat = (id, w, hh, href) => h('pattern', { id, patternUnits: 'userSpaceOnUse', width: w, height: hh },
     h('image', { href, x: 0, y: 0, width: w, height: hh, style: 'image-rendering:pixelated' }));
@@ -79,7 +79,7 @@ export function buildPad() {
   }
 
   ctrl.clear();
-  S.layout.keys.forEach((id, slot) => {
+  state.layout.keys.forEach((id, slot) => {
     const cx = KEY_X[slot % 3], cy = KEY_Y[Math.floor(slot / 3)];
     const label = h('text', { class: 'k-label', y: -17 });
     const icon = h('g', { class: 'k-icon', transform: 'translate(0 -30) scale(3.6) translate(-12 -12)' });
@@ -108,7 +108,7 @@ export function buildPad() {
     ctrl.set(id, { id, kind: 'key', el: g, label, icon, slot });
   });
 
-  S.layout.knobs.forEach((trio, k) => {
+  state.layout.knobs.forEach((trio, k) => {
     const K = KNOBS[k];
     const arrow = h('text', { class: 'n-arrow', y: -((K.bezel || K.disc + 6) + 30) });
     const spin = [];

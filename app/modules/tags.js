@@ -2,7 +2,7 @@
 import { $, el } from './dom.js';
 import { NAME, labelFor } from './labels.js';
 import { hotOf } from './pad.js';
-import { S, ctrl } from './state.js';
+import { ctrl, state } from './state.js';
 
 /* ---------- etichette sul pad e riga dell'ultima azione ---------- */
 const tagEls = new Map();
@@ -41,7 +41,7 @@ export function renderRecents() {
   box.classList.toggle('idle', recents.length === 0);
   if (!recents.length) {
     box.replaceChildren(el('div', { class: 'rchip glass now' }, el('b', {}, 'In attesa'),
-      el('span', {}, S.bridge ? 'Premi un tasto del macropad' : 'Ponte non attivo · solo eventi di questa pagina')));
+      el('span', {}, state.bridge ? 'Premi un tasto del macropad' : 'Ponte non attivo · solo eventi di questa pagina')));
     return;
   }
   box.replaceChildren(...recents.map((r, i) => el('div', { class: 'rchip glass' + (i === 0 ? ' now' : '') },

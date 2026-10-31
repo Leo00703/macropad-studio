@@ -3,16 +3,15 @@ import { $, btn, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
 import { section } from './inspector.js';
 import { buildPad } from './pad.js';
-import { live } from './press.js';
 import { anchorSheet, closeBtn, fillSheet, hideSheets } from './sheets.js';
-import { S } from './state.js';
+import { state } from './state.js';
 import { allIds, commit, encOpts, ensureStore } from './store.js';
 
 /* — impostazioni e profilo — */
 function coverage() {
   const o = encOpts();
   const c = { total: 0, signed: 0, hosted: 0, normal: 0, uniq: 0, empty: 0 };
-  S.store.profile.layers.forEach((Ly, li) => allIds().forEach((id) => {
+  state.store.profile.layers.forEach((Ly, li) => allIds().forEach((id) => {
     const a = Ly.controls && Ly.controls[id];
     if (!a) { if (o.signEmpty) c.empty++; return; }
     if (a.t === 'clear') return;
@@ -33,7 +32,7 @@ const switchRow = (title, desc, on, set, disabled) => {
   return el('div', { class: 'tgl' }, el('div', { class: 't' }, el('b', {}, title), el('small', {}, desc)), b);
 };
 function exportProfile() {
-  const data = { app: 'macropad-studio', version: 1, profile: S.store.profile, layout: S.store.layout || S.layout };
+  const data = { app: 'macropad-studio', version: 1, profile: state.store.profile, layout: state.store.layout || state.layout };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = el('a', { href: URL.createObjectURL(blob), download: 'macropad-profilo.json' });
   document.body.append(a); a.click(); a.remove();
@@ -51,8 +50,8 @@ async function importProfile(file) {
         MP.encodeAction(Number(id), 1, a);          // valida: lancia se il contenuto non è codificabile
       }
     }
-    const lay = data.layout && Array.isArray(data.layout.keys) && data.layout.keys.length === 9 ? data.layout : (S.store && S.store.layout) || S.layout;
-    S.store = { profile: p, layout: lay };
+    const lay = data.layout && Array.isArray(data.layout.keys) && data.layout.keys.length === 9 ? data.layout : (state.store && state.store.layout) || state.layout;
+    state.store = { profile: p, layout: lay };
     commit(); buildPad();
     SETT.msg = 'Profilo importato.'; SETT.err = false;
   } catch (e) { SETT.msg = 'Importazione non riuscita: ' + e.message; SETT.err = true; }
@@ -70,8 +69,8 @@ export function openSettings() {
 export function renderSettings() {
   const box = $('#settings');
   closeDropdowns();
-  if (!S.store) { box.hidden = true; return; }
-  const p = S.store.profile;
+  if (!state.store) { box.hidden = true; return; }
+  const p = state.store.profile;
   const set = (k, v) => { p[k] = v; if (!p.signature) p.signAll = false; commit(); renderSettings(); };
   const sigOn = !!p.signature;
   const c = coverage();

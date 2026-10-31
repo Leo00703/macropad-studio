@@ -7,7 +7,7 @@ import { section } from './inspector.js';
 import { shownLayer } from './labels.js';
 import { SEND, runSend } from './send.js';
 import { anchorSheet, closeBtn, fillSheet, hideSheets, progressBar } from './sheets.js';
-import { S } from './state.js';
+import { state } from './state.js';
 import { commit, ensureStore } from './store.js';
 
 /* — LED — */
@@ -24,7 +24,7 @@ const LED_MODES = [[0, 'Spento', 'Tutti i LED spenti.'],
   [11, 'Tasto premuto, netto', 'Come “Tasto premuto”, ma il tasto si accende e si spegne di colpo, senza dissolvenza.']];
 const LEDE = { layer: null };
 const ledOf = (L) => {
-  const led = S.store && S.store.profile.layers[L - 1].led;
+  const led = state.store && state.store.profile.layers[L - 1].led;
   return led && typeof led.color === 'number' ? { color: led.color, mode: led.mode | 0, set: true } : { color: L === 1 ? 4 : 0, mode: 1, set: false };
 };
 export function openLeds() {
@@ -38,13 +38,13 @@ export function openLeds() {
 }
 function setLedField(L, patch) {
   const cur = ledOf(L);
-  S.store.profile.layers[L - 1].led = { color: patch.color != null ? patch.color : cur.color, mode: patch.mode != null ? patch.mode : cur.mode };
+  state.store.profile.layers[L - 1].led = { color: patch.color != null ? patch.color : cur.color, mode: patch.mode != null ? patch.mode : cur.mode };
   commit();
 }
 export function renderLeds() {
   const box = $('#leds');
   closeDropdowns();
-  if (!S.store) { box.hidden = true; return; }
+  if (!state.store) { box.hidden = true; return; }
   const L = LEDE.layer || shownLayer();
   const cur = ledOf(L);
   const key = 'led:' + L;

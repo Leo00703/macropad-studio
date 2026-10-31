@@ -13,7 +13,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node app/test/protocol.test.js
+      - run: npm test
+        working-directory: app
       - name: Profile → packets smoke test
         run: node tools/profile-frames.js app/profiles/diagnostico-layer1.json > /dev/null
 

@@ -2,10 +2,11 @@
 import { chips, linkState } from './bridge.js';
 import { $, btn, el, sleep } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
+import { UNENCODABLE } from './frames.js';
 import { NAME } from './labels.js';
 import { anchorSheet, closeBtn, dotEl, fillSheet, hideSheets, progressBar, renderSheets } from './sheets.js';
-import { S } from './state.js';
-import { UNENCODABLE, encOpts, encodeErrors, frameHexMap, readSent, updatePending, writeSent } from './store.js';
+import { state } from './state.js';
+import { currentFrameHexMap, encOpts, encodeErrors, readSent, updatePending, writeSent } from './store.js';
 
 export const SEND = { pending: [], busy: false, dev: null, msg: '', err: false, done: false, progress: null };
 /* — invio al pad (WebHID) — */
@@ -22,7 +23,7 @@ async function hidConnect() {
 }
 /* pacchetti di un controllo come li invia il configuratore: "azzera" + azione (il firmware conserva il tipo vecchio) */
 export function framesFor(L, id) {
-  const a = S.store.profile.layers[L - 1].controls[id] || null;
+  const a = state.store.profile.layers[L - 1].controls[id] || null;
   const list = MP.encodeActionFrames(id, L, a, encOpts());
   const name = NAME(id) + ' · L' + L;
   const out = [];
@@ -36,12 +37,12 @@ const pendingName = (k) => {
   return NAME(id) + ' · L' + L;
 };
 async function sendKeys(keys) {
-  const cur = frameHexMap();
+  const cur = currentFrameHexMap();
   const frames = [];
   for (const k of keys) {
     if (cur[k] === UNENCODABLE) throw new Error('«' + pendingName(k) + '» non è codificabile: ' + (encodeErrors.get(k) || 'errore sconosciuto') + '.');
     if (k.startsWith('led:')) {
-      const L = Number(k.slice(4)), led = S.store.profile.layers[L - 1].led;
+      const L = Number(k.slice(4)), led = state.store.profile.layers[L - 1].led;
       if (led) frames.push({ label: 'LED · L' + L, bytes: MP.led(L, led.color, led.mode) });
     } else {
       const [L, id] = k.split(':').map(Number);
@@ -70,7 +71,7 @@ export async function runSend(all, keysIn) {
   if (SEND.busy) return;
   SEND.busy = true; SEND.err = false; SEND.msg = ''; SEND.done = false; renderSheets();
   try {
-    const cur = frameHexMap();
+    const cur = currentFrameHexMap();
     const keys = keysIn || (all ? Object.keys(cur).filter((k) => cur[k] !== '') : SEND.pending.slice());
     const n = await sendKeys(keys);
     SEND.done = true;
@@ -93,7 +94,7 @@ export function openSend() {
 export function renderSend() {
   const box = $('#send');
   closeDropdowns();
-  if (!S.store) { box.hidden = true; return; }
+  if (!state.store) { box.hidden = true; return; }
   const n = SEND.pending.length;
   const st = linkState();
   const connected = !!(SEND.dev && SEND.dev.opened);

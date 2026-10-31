@@ -4,7 +4,7 @@ export const BRIDGE = 'http://127.0.0.1:5174';
 export const STORE = 'macropad-studio.v1';          // chiave del profilo salvato nel browser (localStorage)
 /* ---------- stato ---------- */
 export const DEFAULT_LAYOUT = { keys: [1, 2, 3, 4, 5, 6, 7, 8, 9], knobs: [[13, 14, 15], [16, 17, 18], [19, 20, 21]] };
-export const S = {
+export const state = {
   store: null, layout: DEFAULT_LAYOUT, sigs: [],
   layerMode: 'auto', detected: 1,            // layer mostrato: 'auto' segue quello fisico, altrimenti 1..3
   padLayer: 1, padKnown: false,              // layer FISICO del pad, dedotto dagli eventi

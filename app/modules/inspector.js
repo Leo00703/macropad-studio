@@ -1,25 +1,23 @@
 /* inspector.js — scheda ancorata al controllo selezionato. */
 import { $, el } from './dom.js';
 import { closeDropdowns } from './dropdown.js';
-import { E, enterEdit, leaveEdit, renderEditor, stopRec } from './editor.js';
+import { editorState, enterEdit, leaveEdit, renderEditor, stopRec } from './editor.js';
 import { iconEl } from './icons.js';
 import { NAME, dupGroups, iconNameFor, isUniqueEvent, kindFor, labelFor, shownLayer } from './labels.js';
 import { hotOf } from './pad.js';
 import { press, release, rotate } from './press.js';
-import { wheel } from './recognition.js';
-import { S, ctrl, knobEl } from './state.js';
-import { note } from './tags.js';
+import { ctrl, knobEl, state } from './state.js';
 
 /* ---------- ispettore ancorato al controllo ---------- */
 export const card = $('#inspector');
 export function select(sel) {
-  const same = S.sel && sel && S.sel.kind === sel.kind && S.sel.id === sel.id && S.sel.k === sel.k;
-  S.sel = same ? null : sel;
+  const same = state.sel && sel && state.sel.kind === sel.kind && state.sel.id === sel.id && state.sel.k === sel.k;
+  state.sel = same ? null : sel;
   stopRec(true);
-  if (!S.sel) { if (S.edit) leaveEdit(); } else E.act = 1;
+  if (!state.sel) { if (state.edit) leaveEdit(); } else editorState.act = 1;
   document.querySelectorAll('#pad .sel').forEach((e) => e.classList.remove('sel'));
-  if (S.sel) {
-    const target = S.sel.kind === 'key' ? ctrl.get(S.sel.id).el : knobEl[S.sel.k];
+  if (state.sel) {
+    const target = state.sel.kind === 'key' ? ctrl.get(state.sel.id).el : knobEl[state.sel.k];
     target.classList.add('sel');
   }
   renderInspector();
@@ -47,13 +45,13 @@ const iconAndValue = (id, L, empty) => {
 export const section = (label, ...kids) => el('section', { class: 'sec' }, el('span', { class: 'micro' }, label), ...kids);
 export function renderInspector() {
   closeDropdowns();
-  if (!S.sel) { card.classList.remove('in'); card.hidden = true; $('#link path').setAttribute('d', ''); $('#link circle').setAttribute('cx', -10); return; }
-  if (S.edit) { renderEditor(); return; }
+  if (!state.sel) { card.classList.remove('in'); card.hidden = true; $('#link path').setAttribute('d', ''); $('#link circle').setAttribute('cx', -10); return; }
+  if (state.edit) { renderEditor(); return; }
   const L = shownLayer();
   const dups = dupGroups(L);
   let kicker, title, body, ids;
-  if (S.sel.kind === 'key') {
-    const id = S.sel.id, n = S.layout.keys.indexOf(id) + 1;
+  if (state.sel.kind === 'key') {
+    const id = state.sel.id, n = state.layout.keys.indexOf(id) + 1;
     ids = [id];
     kicker = 'Tasto ' + pad2(n);
     title = 'Tasto ' + n;
@@ -63,16 +61,16 @@ export function renderInspector() {
         el('li', { class: k === L ? 'cur' : '' }, el('span', { class: 'k' }, 'Layer ' + k + (k === L ? ' · attivo' : '')), el('div', { class: 'v' }, ...iconAndValue(id, k)))))),
     ];
   } else {
-    const trio = S.layout.knobs[S.sel.k];
+    const trio = state.layout.knobs[state.sel.k];
     ids = trio.slice();
-    kicker = 'Encoder ' + pad2(S.sel.k + 1);
-    title = 'Manopola ' + (S.sel.k + 1);
+    kicker = 'Encoder ' + pad2(state.sel.k + 1);
+    title = 'Manopola ' + (state.sel.k + 1);
     body = [section('Azioni · Layer ' + L, el('ul', { class: 'rows' },
       [['↺  Sinistra', 0], ['Premi', 1], ['↻  Destra', 2]].map(([t, a]) =>
         el('li', {}, el('span', { class: 'k' }, t), el('div', { class: 'v' }, ...iconAndValue(trio[a], L))))))];
   }
   const kinds = [...new Set(ids.map((id) => kindFor(id, L)).filter(Boolean))];
-  const here = ids.map((id) => S.sigs.find((x) => x.layer === L && x.id === id)).filter(Boolean);
+  const here = ids.map((id) => state.sigs.find((x) => x.layer === L && x.id === id)).filter(Boolean);
   const uniqueAll = here.every((x) => x.signed || isUniqueEvent(x));
   const identity = !here.length ? null : here.every((x) => x.signed) ? 'Univoco' : uniqueAll ? 'Univoco · azione unica'
     : here.some((x) => x.signed) ? 'In parte univoco' : 'Per azione';
@@ -85,7 +83,7 @@ export function renderInspector() {
       (g.label || 'Questa azione') + ' è assegnata anche a ' + list.join(', ') + '. Il pad invia lo stesso messaggio, quindi la vista li accende insieme.'));
   }
   const close = el('button', { class: 'x', 'aria-label': 'Chiudi' }, '✕');
-  close.addEventListener('click', () => select(S.sel));
+  close.addEventListener('click', () => select(state.sel));
   card.replaceChildren(
     el('header', {}, el('div', {}, el('span', { class: 'micro' }, kicker), el('h2', {}, title),
       el('div', { class: 'badges' }, el('span', { class: 'badge acc' }, 'Layer ' + L), ...kinds.map((k) => el('span', { class: 'badge' }, k)),
@@ -103,8 +101,8 @@ export function renderInspector() {
   requestAnimationFrame(() => card.classList.add('in'));
 }
 export function placeInspector() {
-  if (!S.sel || card.hidden) return;
-  const target = S.sel.kind === 'key' ? hotOf(ctrl.get(S.sel.id)) : knobEl[S.sel.k].querySelector('.n-hot');
+  if (!state.sel || card.hidden) return;
+  const target = state.sel.kind === 'key' ? hotOf(ctrl.get(state.sel.id)) : knobEl[state.sel.k].querySelector('.n-hot');
   const r = target.getBoundingClientRect();
   const pad = $('#pad .frost').getBoundingClientRect();
   // spazio realmente libero: sotto la barra dei layer/strumenti in alto e sopra la barra in basso
@@ -161,7 +159,7 @@ export function attachInteraction() {
   });
   document.querySelectorAll('#pad .knob').forEach((g) => {
     const k = Number(g.dataset.knob);
-    const trio = S.layout.knobs[k];
+    const trio = state.layout.knobs[k];
     g.addEventListener('pointerdown', () => { press('simk' + k, [{ id: trio[1] }]); });
     const up = () => release('simk' + k);
     g.addEventListener('pointerup', up); g.addEventListener('pointerleave', up);
