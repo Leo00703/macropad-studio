@@ -53,6 +53,8 @@
   }
 
   /* count: se omesso si calcola con pairCount (regola dell'app ufficiale) */
+  /** @param {number} controlId 1–21 (tasti 1–9, manopole 13–21) o LED_ID  @param {number} layer 1–3  @param {number} type uno di TYPE
+   *  @param {number} delayMs 0–6000  @param {number[]} payload coppie (modificatore, usage)…  @param {number} [count] numero di coppie  @returns {Uint8Array} 64 byte */
   function frame(controlId, layer, type, delayMs, payload, count) {
     if (!Number.isInteger(layer) || layer < 1 || layer > LIMITS.layers) throw new RangeError('Il layer deve essere 1, 2 o 3');
     if (!isControlId(controlId) && controlId !== LED_ID) throw new RangeError('ID controllo non valido: ' + controlId);
@@ -131,6 +133,7 @@
     return i < 0 ? null : { layer: Math.floor(i / 24) + 1, id: (i % 24) + 1 };
   }
   /* azione effettivamente inviata: con opts.signature aggiunge la firma (solo se l'azione emette tasti) */
+  /** @param {number} id  @param {number} layer  @param {Action|null} a  @param {EncodeOptions} [opts]  @returns {Action|null} l'azione che il pad riceve davvero (con firma o identità, se richiesto) */
   function withSignature(id, layer, a, opts) {
     if (!opts || !opts.signature) return a;
     const sig = signatureKeys(id, layer).map((key) => ({ mod: 0, key }));
@@ -148,6 +151,7 @@
     return a;
   }
   /* true se il controllo, con queste opzioni, emette una firma (id/layer servono per i controlli "eseguiti dal PC") */
+  /** @param {Action|null} a  @param {EncodeOptions} [opts]  @param {number} [id]  @param {number} [layer]  @returns {boolean} true se il controllo emette una firma */
   function isSigned(a, opts, id, layer) {
     if (!opts || !opts.signature) return false;
     if (!a) return !!opts.signEmpty;                                              // controllo vuoto: emette l'identità "sensore"
@@ -182,6 +186,7 @@
     return { d: clampInt(r.delay, 100, 2000, 450), r: clampInt(r.rate, 30, 500, 70) };
   }
   /* → Map "layer:id" → azione da eseguire sul PC, solo per i controlli NON nativi */
+  /** @param {Profile} profile  @param {Layout} layout  @returns {Map<string, object>} "layer:id" → azione che esegue il ponte */
   function hostedControls(profile, layout) {
     const ids = [...layout.keys, ...layout.knobs.flat()];
     const groups = new Map();
@@ -220,6 +225,7 @@
     for (let i = 0; i < n; i++) if (x[i] !== y[i]) return false;
     return true;                                                                // uguali, oppure una è prefisso dell'altra
   }
+  /** @param {Profile} profile  @param {Layout} layout  @returns {{ keys: Set<string>, hosted: Map<string, object> }} controlli da firmare e azioni del ponte */
   function signPlan(profile, layout) {
     const ids = [...layout.keys, ...layout.knobs.flat()];
     const all = !!profile.signAll;
@@ -250,6 +256,7 @@
 
   /* Tutti i pacchetti necessari per un'azione, nell'ordine di invio.
      Tastiera: pacchetto tasti + (se pausa > 0, oppure se si chiede di azzerarla) pacchetto pausa. */
+  /** @param {number} id  @param {number} layer  @param {Action|null} a  @param {EncodeOptions} [opts]  @returns {Uint8Array[]} pacchetti nell'ordine di invio (vuoto se non c'è nulla da scrivere) */
   function encodeActionFrames(id, layer, a, opts) {
     a = withSignature(id, layer, a, opts);
     const first = encodeAction(id, layer, a, opts);

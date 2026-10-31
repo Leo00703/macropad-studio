@@ -195,7 +195,11 @@ export function renderEditor() {
   const head = el('header', {}, el('div', {}, el('span', { class: 'micro' }, 'Modifica'), el('h2', {}, title),
     el('div', { class: 'badges' }, el('span', { class: 'badge acc' }, 'Layer ' + L), el('span', { class: 'badge' }, 'ID ' + id))), close);
   const kids = [];
-  if (isKnob) kids.push(section('Quale azione', segBtns([[0, '↺ Sinistra'], [1, 'Premi'], [2, '↻ Destra']], (k) => editorState.act === k, (k) => { stopRec(true); editorState.act = k; renderInspector(); }, 'Azione della manopola')));
+  if (isKnob) {
+    const choices = [[0, '↺ Sinistra'], [1, 'Premi'], [2, '↻ Destra']];
+    const pickAct = (k) => { stopRec(true); editorState.act = k; renderInspector(); };
+    kids.push(section('Quale azione', segBtns(choices, (k) => editorState.act === k, pickAct, 'Azione della manopola')));
+  }
   const cur = a ? a.t : 'none';
   const off = cur === 'clear';
   const typeSec = [typeTiles(cur, (k) => setType(L, id, k))];
@@ -207,7 +211,12 @@ export function renderEditor() {
   if (a && a.t === 'keys') kids.push(section('Tasti', ...keysEditor(a, L, id)));
   else if (a && a.t === 'media') kids.push(section('Funzione', ...mediaEditor(a)));
   else if (a && a.t === 'mouse') kids.push(section('Mouse', ...mouseEditor(a)));
-  else if (!off) kids.push(el('p', { class: 'hintx' }, 'Nessuna azione: premere il controllo non farà nulla' + (state.store.profile.signature && state.store.profile.signEmpty !== false ? ' (invia solo un codice riservato, così la vista live sa il layer).' : '.')));
+  else if (!off) {
+    const p = state.store.profile;
+    const sendsCode = p.signature && p.signEmpty !== false;
+    kids.push(el('p', { class: 'hintx' }, 'Nessuna azione: premere il controllo non farà nulla'
+      + (sendsCode ? ' (invia solo un codice riservato, così la vista live sa il layer).' : '.')));
+  }
   const hd = holdEditor(a, L, id); if (hd) kids.push(hd);
   const sg = signEditor(a, L, id); if (sg) kids.push(sg);
   const hn = hostNote(a, L, id); if (hn) kids.push(hn);

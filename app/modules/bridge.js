@@ -84,7 +84,11 @@ export function chips() {
   cp.className = 'chip ' + (n && !d ? 'ok' : 'warn');
   const sg = state.sigs.filter((x) => x.signed && !x.empty).length;
   cp.lastElementChild.textContent = n ? n + ' azioni' + (sg ? ' · ' + sg + ' firmate' : '') + (d ? ' · ' + d + (d === 1 ? ' duplicata' : ' duplicate') : '') : 'Nessun profilo';
-  cp.title = n ? 'Azioni riconoscibili nel profilo salvato dal configuratore.' + (sg ? ' Le firmate (F13–F21) sono univoche per controllo e layer.' : '') + (d ? ' Alcune azioni identiche sono su più controlli e non si distinguono.' : '') : 'Apri il configuratore e salva un profilo.';
+  cp.title = n
+    ? 'Azioni riconoscibili nel profilo salvato dal configuratore.'
+      + (sg ? ' Le firmate (F13–F21) sono univoche per controllo e layer.' : '')
+      + (d ? ' Alcune azioni identiche sono su più controlli e non si distinguono.' : '')
+    : 'Apri il configuratore e salva un profilo.';
   $('#diagHelp').textContent = state.bridge
     ? 'Intervalli tra gli eventi e durata di ogni pressione, misurati dal ponte. Servono a tarare le soglie rotazione/pressione.'
     : 'Il ponte non è attivo: avvia start.cmd (o tools\\PadBridge.ps1) per vedere il pad anche in background.';

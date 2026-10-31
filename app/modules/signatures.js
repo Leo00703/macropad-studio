@@ -13,10 +13,13 @@ export function summarize(a) {
   if (a.t === 'mouse') {
     const m = modLabel(hidMask(a.mod || 0));
     if (a.wheel) return (m ? m + '+' : '') + 'Rotella ' + (a.wheel > 0 ? '↑' : '↓');
-    return a.buttons & 1 ? 'Clic sinistro' : a.buttons & 2 ? 'Clic destro' : a.buttons & 4 ? 'Clic centrale' : 'Mouse';
+    const click = BUTTONS.find((b) => a.buttons & b.bit);
+    return click ? click.name : 'Mouse';
   }
   return '';
 }
+/* pulsanti del mouse: bit HID, nome per le etichette e nome per le firme */
+const BUTTONS = [{ bit: 1, name: 'Clic sinistro', key: 'left' }, { bit: 2, name: 'Clic destro', key: 'right' }, { bit: 4, name: 'Clic centrale', key: 'middle' }];
 export const KIND_NAME = { keys: 'Tastiera', media: 'Media', wheel: 'Rotella del mouse', button: 'Pulsante del mouse' };
 
 /* la firma riconoscibile di UN controllo in un layer (o null se non produce eventi riconoscibili) */
@@ -41,7 +44,7 @@ function signatureFor(a, layer, id, { plan, hosted, signEmpty }) {
   if (a.t === 'media') return Object.assign(base, { kind: 'media', usage: a.usage });
   if (a.t === 'mouse') {
     if (a.wheel) return Object.assign(base, { kind: 'wheel', dir: Math.sign(a.wheel), mods: hidMask(a.mod || 0) });
-    if (a.buttons) return Object.assign(base, { kind: 'button', button: a.buttons & 1 ? 'left' : a.buttons & 2 ? 'right' : 'middle' });
+    if (a.buttons) return Object.assign(base, { kind: 'button', button: (BUTTONS.find((b) => a.buttons & b.bit) || BUTTONS[2]).key });
   }
   return null;
 }

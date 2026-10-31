@@ -35,6 +35,7 @@ export const ICONS = {
   redo: [['s', 'M15 5.5l5 5-5 5M19.5 10.5H9a4.8 4.8 0 0 0 0 9.6h3']],
   save: [['s', 'M5 4h11l3 3v13H5z'], ['s', 'M8 4v5h7V4M8 20v-6h8v6']],
 };
+const CLICK_ICON = [[1, 'click_left'], [2, 'click_right'], [4, 'click_mid']];       // bit del pulsante → simbolo
 const MEDIA_ICON = { 0xCD: 'play_pause', 0xE9: 'vol_up', 0xEA: 'vol_down', 0xE2: 'mute', 0xB5: 'next', 0xB6: 'prev' };
 const NAV_ICON = { 0x4F: 'arrow_right', 0x50: 'arrow_left', 0x51: 'arrow_down', 0x52: 'arrow_up', 0x28: 'enter', 0x2A: 'backspace', 0x4C: 'delete', 0x2B: 'tab', 0x2C: 'space' };
 const CTRL_ICON = { 0x06: 'copy', 0x19: 'paste', 0x1B: 'cut', 0x1D: 'undo', 0x1C: 'redo', 0x16: 'save' };
@@ -44,7 +45,8 @@ export function iconFor(a) {
   if (a.t === 'media') return MEDIA_ICON[a.usage] || null;
   if (a.t === 'mouse') {
     if (a.wheel) return a.wheel > 0 ? 'wheel_up' : 'wheel_down';          // con modificatori: simbolo + didascalia (iconCap)
-    return a.buttons & 1 ? 'click_left' : a.buttons & 2 ? 'click_right' : a.buttons & 4 ? 'click_mid' : null;
+    const click = CLICK_ICON.find(([bit]) => a.buttons & bit);
+    return click ? click[1] : null;
   }
   if (a.t === 'keys' && a.steps && a.steps.length === 1 && !a.delay) {
     const s = a.steps[0], m = ((s.mod || 0) | ((s.mod || 0) >> 4)) & 0x0F;
