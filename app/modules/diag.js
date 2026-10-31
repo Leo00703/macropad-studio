@@ -4,7 +4,7 @@ import { MEDIA_NAME, vkName } from './keymap.js';
 
 /* Registro degli eventi grezzi con intervalli: serve a tarare le soglie sul pad reale. */
 export const rawLog = [];
-export const downAt = {};
+const downAt = {};
 let rawPrev = null;
 export function trace(ev, t) {
   const code = ev.type === 'key' ? 'k' + ev.vk : ev.type === 'media' ? 'm' + ev.usage : ev.type === 'button' ? 'b' + ev.button : null;

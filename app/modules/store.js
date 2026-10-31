@@ -1,9 +1,6 @@
 /* store.js — profilo in memoria, codifica dei pacchetti, confronto con quanto inviato al pad. */
-import { pushHostmap } from './bridge.js';
 import { $, storage } from './dom.js';
 import { encodeOptions, frameHexMap, pendingKeys } from './frames.js';
-import { paintLabels } from './labels.js';
-import { load } from './profile.js';
 import { SEND } from './send.js';
 import { renderSheets } from './sheets.js';
 import { SENT_KEY, STORE, state } from './state.js';
@@ -46,7 +43,11 @@ export function paintSendChip() {
   c.lastElementChild.textContent = n ? 'Da inviare al pad · ' + n : 'Pad aggiornato';
   c.title = n ? 'Ci sono controlli modificati non ancora scritti sul macropad. Clicca per inviarli.' : 'Il profilo coincide con quanto inviato al pad.';
 }
+/* Chi deve reagire a una modifica del profilo si registra con onCommit (lo fa main.js, nell'ordine in cui servono):
+   store.js salva e avvisa, senza conoscere l'interfaccia. */
+const commitListeners = [];
+export function onCommit(fn) { commitListeners.push(fn); }
 export function commit() {
   storage.write(STORE, { profile: state.store.profile, layout: state.store.layout || state.layout });
-  load(); paintLabels(); pushHostmap(false); updatePending();
+  for (const fn of commitListeners) fn();
 }

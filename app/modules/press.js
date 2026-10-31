@@ -3,7 +3,7 @@ import { MIN_SHOW, isTurn } from './labels.js';
 import { ripple } from './pad.js';
 import { ctrl, knobAngle, state } from './state.js';
 
-export const live = {};        // canale → { ids:Set, since }   (un canale = una sorgente: tastiera, media, rotella…)
+const live = {};        // canale → { ids:Set, since }   (un canale = una sorgente: tastiera, media, rotella…)
 /* Le classi "premuto" si DERIVANO dai canali attivi a ogni cambio: nessun controllo può restare bloccato.
    Le rotazioni non "premono" mai la manopola: la fanno solo girare (vedi rotate). */
 function render() {

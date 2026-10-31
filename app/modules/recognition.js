@@ -158,7 +158,7 @@ export function mediaEvent(usage, down, t) {
 /* La rotella del mouse è un impulso, senza "rilascio": un tasto tenuto la ripete. Il primo impulso mostra
    il tasto premuto per un attimo; se ne arriva un altro entro 700 ms si considera "tenuto" e resta premuto finché
    gli impulsi continuano (finestra = 1,8 × l'intervallo osservato, almeno 250 ms). */
-export const wheelPulse = { key: '', last: 0, timer: 0 };
+const wheelPulse = { key: '', last: 0, timer: 0 };
 export function wheelEvent(dir) {
   const p = pick(state.sigs.filter((s) => s.kind === 'wheel' && s.dir === dir && s.mods === (state.modState & 7)));
   if (!p.hits.length) { note(null, 'Rotella ' + (dir > 0 ? '↑' : '↓') + (state.modState & 7 ? ' con ' + modLabel(state.modState & 7) : '')); return; }

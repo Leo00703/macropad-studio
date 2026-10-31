@@ -15,7 +15,7 @@ import { onEvent, wheelEvent } from './recognition.js';
 import { openSend } from './send.js';
 import { openSettings } from './settings.js';
 import { STORE, ctrl, state } from './state.js';
-import { updatePending } from './store.js';
+import { onCommit, updatePending } from './store.js';
 
 window.addEventListener('keydown', (e) => { if (editorState.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, true); } }, true);
 window.addEventListener('keyup', (e) => { if (editorState.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, false); } }, true);
@@ -62,6 +62,12 @@ $('#chipSend').addEventListener('click', openSend);
 $('#chipSend').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSend(); } });
 
 /* ---------- avvio ---------- */
+// dopo ogni modifica del profilo: si rileggono le firme, si ridisegnano le etichette, si aggiorna il ponte e il confronto col pad
+onCommit(load);
+onCommit(paintLabels);
+onCommit(() => pushHostmap(false));
+onCommit(() => updatePending());
+
 load();
 buildPad();
 connectBridge();

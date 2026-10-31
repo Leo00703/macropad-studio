@@ -16,10 +16,8 @@ export function ripple(c, s) {
 
 /* ---------- 2: disegno del pad ---------- */
 const stopsOf = (arr) => arr.map(([o, c, a]) => h('stop', { offset: o, style: 'stop-color:' + c + (a != null ? ';stop-opacity:' + a : '') }));
-export function buildPad() {
-  const svg = $('#pad');
-  state.sel = null;
-  svg.replaceChildren();
+/* gradienti, filtri e motivi usati dal disegno */
+function buildDefs(svg) {
   const pat = (id, w, hh, href) => h('pattern', { id, patternUnits: 'userSpaceOnUse', width: w, height: hh },
     h('image', { href, x: 0, y: 0, width: w, height: hh, style: 'image-rendering:pixelated' }));
   svg.append(h('defs', {},
@@ -42,7 +40,10 @@ export function buildPad() {
       h('feColorMatrix', { in: 't', type: 'matrix', values: '0.26 0 0 0 -0.075  0.26 0 0 0 -0.075  0.26 0 0 0 -0.075  0 0 0 0 0.92', result: 'g' }),
       h('feComposite', { in: 'g', in2: 'SourceGraphic', operator: 'in' })),
     pat('grainPlate', 192, 192, Tex.plateGrain)));
+}
 
+/* ombra, strati inferiori, piastra acrilica, componenti in trasparenza e viti */
+function buildPlate(svg) {
   // ombra a terra, luce LED sotto il pad, strati inferiori (base nera, PCB, spaziatore acrilico)
   svg.append(h('path', { class: 'shadow', d: OUTLINE, transform: 'translate(16 58)' }));
   svg.append(h('path', { class: 'under', d: OUTLINE, transform: 'translate(0 26)' }));
@@ -77,74 +78,86 @@ export function buildPad() {
       h('circle', { class: 'screw-bg', r: 17 }),
       h('path', { class: 'screw-x', d: 'M-8 -2.5L8 2.5M-2.5 -8L2.5 8' })));
   }
+}
 
-  ctrl.clear();
-  state.layout.keys.forEach((id, slot) => {
-    const cx = KEY_X[slot % 3], cy = KEY_Y[Math.floor(slot / 3)];
-    const label = h('text', { class: 'k-label', y: -17 });
-    const icon = h('g', { class: 'k-icon', transform: 'translate(0 -30) scale(3.6) translate(-12 -12)' });
-    const g = h('g', { class: 'key', transform: `translate(${cx} ${cy})`, 'data-id': id, tabindex: 0, role: 'button' },
-      h('rect', { class: 'k-led', x: -114, y: -116, width: 228, height: 240, rx: 38 }),
-      h('rect', { class: 'k-shadow', x: -104, y: -98, width: 214, height: 232, rx: 22 }),
-      h('path', { class: 'k-base', d: 'M-69 -101H69L95 -82V101H-95V-82Z' }),
-      h('path', { d: 'M-69 -101H69L95 -82V101H-95V-82Z', fill: 'url(#slope)' }),
-      h('path', { d: 'M-69 -101H69L95 -82V101H-95V-82Z', fill: '#000', filter: 'url(#keyGrain)', opacity: 0.85 }),
-      h('path', { class: 'k-base-hl', d: 'M-69 -101H69L95 -82' }),
-      h('path', { class: 'k-edge', d: 'M-95 -82V101M95 -82V101' }),
-      h('g', { class: 'k-top' },
-        h('rect', { class: 'k-face', x: -73, y: -108, width: 146, height: 163, rx: 13 }),
-        h('rect', { x: -73, y: -108, width: 146, height: 163, rx: 13, fill: '#000', filter: 'url(#keyGrain)' }),
-        h('rect', { x: -73, y: -108, width: 146, height: 163, rx: 13, fill: 'url(#faceTop)' }),
-        h('rect', { x: -73, y: -108, width: 146, height: 163, rx: 13, fill: 'url(#faceCyl)' }),
-        h('rect', { class: 'k-bevel', x: -71.5, y: -106.5, width: 143, height: 160, rx: 12 }),
-        h('path', { class: 'k-lip-sh', d: 'M-66 58Q0 67 66 58' }),
-        h('path', { class: 'k-lip', d: 'M-66 52Q0 61 66 52' }),
-        h('rect', { class: 'k-glow', x: -73, y: -108, width: 146, height: 163, rx: 13 }),
-        icon,
-        label,
-        h('text', { class: 'k-num', x: -61, y: -86 }, String(slot + 1))),
-      h('rect', { class: 'k-sel', x: -114, y: -120, width: 228, height: 240, rx: 24 }));
-    svg.append(g);
-    ctrl.set(id, { id, kind: 'key', el: g, label, icon, slot });
-  });
+/* un tasto: ombra, base, cappuccio con grana, etichetta e simbolo; si registra in ctrl */
+function buildKey(svg, id, slot) {
+  const cx = KEY_X[slot % 3], cy = KEY_Y[Math.floor(slot / 3)];
+  const label = h('text', { class: 'k-label', y: -17 });
+  const icon = h('g', { class: 'k-icon', transform: 'translate(0 -30) scale(3.6) translate(-12 -12)' });
+  const g = h('g', { class: 'key', transform: `translate(${cx} ${cy})`, 'data-id': id, tabindex: 0, role: 'button' },
+    h('rect', { class: 'k-led', x: -114, y: -116, width: 228, height: 240, rx: 38 }),
+    h('rect', { class: 'k-shadow', x: -104, y: -98, width: 214, height: 232, rx: 22 }),
+    h('path', { class: 'k-base', d: 'M-69 -101H69L95 -82V101H-95V-82Z' }),
+    h('path', { d: 'M-69 -101H69L95 -82V101H-95V-82Z', fill: 'url(#slope)' }),
+    h('path', { d: 'M-69 -101H69L95 -82V101H-95V-82Z', fill: '#000', filter: 'url(#keyGrain)', opacity: 0.85 }),
+    h('path', { class: 'k-base-hl', d: 'M-69 -101H69L95 -82' }),
+    h('path', { class: 'k-edge', d: 'M-95 -82V101M95 -82V101' }),
+    h('g', { class: 'k-top' },
+      h('rect', { class: 'k-face', x: -73, y: -108, width: 146, height: 163, rx: 13 }),
+      h('rect', { x: -73, y: -108, width: 146, height: 163, rx: 13, fill: '#000', filter: 'url(#keyGrain)' }),
+      h('rect', { x: -73, y: -108, width: 146, height: 163, rx: 13, fill: 'url(#faceTop)' }),
+      h('rect', { x: -73, y: -108, width: 146, height: 163, rx: 13, fill: 'url(#faceCyl)' }),
+      h('rect', { class: 'k-bevel', x: -71.5, y: -106.5, width: 143, height: 160, rx: 12 }),
+      h('path', { class: 'k-lip-sh', d: 'M-66 58Q0 67 66 58' }),
+      h('path', { class: 'k-lip', d: 'M-66 52Q0 61 66 52' }),
+      h('rect', { class: 'k-glow', x: -73, y: -108, width: 146, height: 163, rx: 13 }),
+      icon,
+      label,
+      h('text', { class: 'k-num', x: -61, y: -86 }, String(slot + 1))),
+    h('rect', { class: 'k-sel', x: -114, y: -120, width: 228, height: 240, rx: 24 }));
+  svg.append(g);
+  ctrl.set(id, { id, kind: 'key', el: g, label, icon, slot });
+}
 
-  state.layout.knobs.forEach((trio, k) => {
-    const K = KNOBS[k];
-    const arrow = h('text', { class: 'n-arrow', y: -((K.bezel || K.disc + 6) + 30) });
-    const spin = [];
-    const body = h('g', { class: 'n-body' });
-    if (K.sk) {
-      const ribs = h('g', { class: 'n-spin' });
-      for (let i = 0; i < 24; i++) {
-        const a = (i / 24) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
-        ribs.append(h('line', { class: 'n-rib', x1: c * (K.sk.r - 24), y1: s * (K.sk.r - 24), x2: c * (K.sk.r - 5), y2: s * (K.sk.r - 5) }));
-      }
-      spin.push(ribs);
-      body.append(h('g', { transform: `translate(${K.sk.dx} ${K.sk.dy})` }, h('circle', { class: 'n-skirt', r: K.sk.r }), ribs));
-    } else {
-      body.append(h('circle', { class: 'n-bezel', r: K.bezel }),
-        h('circle', { class: 'n-bezel-hl', r: K.bezel - 4 }),
-        h('circle', { class: 'n-step', r: K.disc + 8 }));
+/* una manopola con le sue tre azioni (↺, premi, ↻); si registra in ctrl e knobEl */
+function buildKnob(svg, trio, k) {
+  const K = KNOBS[k];
+  const arrow = h('text', { class: 'n-arrow', y: -((K.bezel || K.disc + 6) + 30) });
+  const spin = [];
+  const body = h('g', { class: 'n-body' });
+  if (K.sk) {
+    const ribs = h('g', { class: 'n-spin' });
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+      ribs.append(h('line', { class: 'n-rib', x1: c * (K.sk.r - 24), y1: s * (K.sk.r - 24), x2: c * (K.sk.r - 5), y2: s * (K.sk.r - 5) }));
     }
-    const m = K.mark, ma = m.a * Math.PI / 180;
-    const mark = h('g', { class: 'n-spin' },
-      h('line', { class: 'n-mark', style: `stroke-width:${m.w}`, x1: Math.cos(ma) * m.r0, y1: Math.sin(ma) * m.r0, x2: Math.cos(ma) * m.r1, y2: Math.sin(ma) * m.r1 }));
-    spin.push(mark);
-    const dim = K.disc;
-    body.append(h('g', {},
-      h('circle', { class: 'n-disc-bg', r: dim }),
-      h('image', { href: Tex.brushed(dim, K.hl), x: -dim, y: -dim, width: dim * 2, height: dim * 2 }),
-      K.ring ? h('circle', { class: 'n-ring', r: K.ring }) : h('circle', { class: 'n-ring', r: dim + 1, style: 'stroke-width:3' }),
-      mark,
-      h('circle', { class: 'n-hot', r: dim, fill: 'transparent' })));
-    const g = h('g', { class: 'knob', transform: `translate(${K.x} ${K.y})`, 'data-knob': k, tabindex: 0, role: 'button' },
-      h('ellipse', { class: 'n-shadow', cx: 16, cy: 26, rx: (K.bezel || K.sk.r) + 4, ry: (K.bezel || K.sk.r) - 4 }),
-      body,
-      h('circle', { class: 'n-sel', r: (K.bezel || K.sk.r) + 16 }), arrow);
-    svg.append(g);
-    knobEl[k] = g;
-    [0, 1, 2].forEach((act) => ctrl.set(trio[act], { id: trio[act], kind: 'knob', knob: k, act, el: g, spin, arrow }));
-  });
+    spin.push(ribs);
+    body.append(h('g', { transform: `translate(${K.sk.dx} ${K.sk.dy})` }, h('circle', { class: 'n-skirt', r: K.sk.r }), ribs));
+  } else {
+    body.append(h('circle', { class: 'n-bezel', r: K.bezel }),
+      h('circle', { class: 'n-bezel-hl', r: K.bezel - 4 }),
+      h('circle', { class: 'n-step', r: K.disc + 8 }));
+  }
+  const m = K.mark, ma = m.a * Math.PI / 180;
+  const mark = h('g', { class: 'n-spin' },
+    h('line', { class: 'n-mark', style: `stroke-width:${m.w}`, x1: Math.cos(ma) * m.r0, y1: Math.sin(ma) * m.r0, x2: Math.cos(ma) * m.r1, y2: Math.sin(ma) * m.r1 }));
+  spin.push(mark);
+  const dim = K.disc;
+  body.append(h('g', {},
+    h('circle', { class: 'n-disc-bg', r: dim }),
+    h('image', { href: Tex.brushed(dim, K.hl), x: -dim, y: -dim, width: dim * 2, height: dim * 2 }),
+    K.ring ? h('circle', { class: 'n-ring', r: K.ring }) : h('circle', { class: 'n-ring', r: dim + 1, style: 'stroke-width:3' }),
+    mark,
+    h('circle', { class: 'n-hot', r: dim, fill: 'transparent' })));
+  const g = h('g', { class: 'knob', transform: `translate(${K.x} ${K.y})`, 'data-knob': k, tabindex: 0, role: 'button' },
+    h('ellipse', { class: 'n-shadow', cx: 16, cy: 26, rx: (K.bezel || K.sk.r) + 4, ry: (K.bezel || K.sk.r) - 4 }),
+    body,
+    h('circle', { class: 'n-sel', r: (K.bezel || K.sk.r) + 16 }), arrow);
+  svg.append(g);
+  knobEl[k] = g;
+  [0, 1, 2].forEach((act) => ctrl.set(trio[act], { id: trio[act], kind: 'knob', knob: k, act, el: g, spin, arrow }));
+}
+
+export function buildPad() {
+  const svg = $('#pad');
+  state.sel = null;
+  svg.replaceChildren();
+  buildDefs(svg);
+  buildPlate(svg);
+  ctrl.clear();
+  state.layout.keys.forEach((id, slot) => buildKey(svg, id, slot));
+  state.layout.knobs.forEach((trio, k) => buildKnob(svg, trio, k));
   attachInteraction();
   paintLabels();
   fitGrain();

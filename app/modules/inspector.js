@@ -43,37 +43,39 @@ const iconAndValue = (id, L, empty) => {
   return n ? [iconEl(n), valueNode(labelFor(id, L), empty)] : [valueNode(labelFor(id, L), empty)];
 };
 export const section = (label, ...kids) => el('section', { class: 'sec' }, el('span', { class: 'micro' }, label), ...kids);
-export function renderInspector() {
-  closeDropdowns();
-  if (!state.sel) { card.classList.remove('in'); card.hidden = true; $('#link path').setAttribute('d', ''); $('#link circle').setAttribute('cx', -10); return; }
-  if (state.edit) { renderEditor(); return; }
-  const L = shownLayer();
-  const dups = dupGroups(L);
-  let kicker, title, body, ids;
+/* cosa mostra la scheda per la selezione: i controlli coinvolti, intestazione e corpo */
+function describeSelection(L) {
   if (state.sel.kind === 'key') {
     const id = state.sel.id, n = state.layout.keys.indexOf(id) + 1;
-    ids = [id];
-    kicker = 'Tasto ' + pad2(n);
-    title = 'Tasto ' + n;
-    body = [
-      section('Azione assegnata', el('div', { class: 'big' }, ...iconAndValue(id, L, 'Nessuna azione'))),
-      section('Tutti i layer', el('ul', { class: 'rows' }, [1, 2, 3].map((k) =>
-        el('li', { class: k === L ? 'cur' : '' }, el('span', { class: 'k' }, 'Layer ' + k + (k === L ? ' · attivo' : '')), el('div', { class: 'v' }, ...iconAndValue(id, k)))))),
-    ];
-  } else {
-    const trio = state.layout.knobs[state.sel.k];
-    ids = trio.slice();
-    kicker = 'Encoder ' + pad2(state.sel.k + 1);
-    title = 'Manopola ' + (state.sel.k + 1);
-    body = [section('Azioni · Layer ' + L, el('ul', { class: 'rows' },
-      [['↺  Sinistra', 0], ['Premi', 1], ['↻  Destra', 2]].map(([t, a]) =>
-        el('li', {}, el('span', { class: 'k' }, t), el('div', { class: 'v' }, ...iconAndValue(trio[a], L))))))];
+    return {
+      ids: [id], kicker: 'Tasto ' + pad2(n), title: 'Tasto ' + n,
+      body: [
+        section('Azione assegnata', el('div', { class: 'big' }, ...iconAndValue(id, L, 'Nessuna azione'))),
+        section('Tutti i layer', el('ul', { class: 'rows' }, [1, 2, 3].map((k) =>
+          el('li', { class: k === L ? 'cur' : '' }, el('span', { class: 'k' }, 'Layer ' + k + (k === L ? ' · attivo' : '')), el('div', { class: 'v' }, ...iconAndValue(id, k)))))),
+      ],
+    };
   }
-  const kinds = [...new Set(ids.map((id) => kindFor(id, L)).filter(Boolean))];
+  const trio = state.layout.knobs[state.sel.k];
+  return {
+    ids: trio.slice(), kicker: 'Encoder ' + pad2(state.sel.k + 1), title: 'Manopola ' + (state.sel.k + 1),
+    body: [section('Azioni · Layer ' + L, el('ul', { class: 'rows' },
+      [['↺  Sinistra', 0], ['Premi', 1], ['↻  Destra', 2]].map(([t, a]) =>
+        el('li', {}, el('span', { class: 'k' }, t), el('div', { class: 'v' }, ...iconAndValue(trio[a], L))))))],
+  };
+}
+/* quanto è univoco il riconoscimento dei controlli: etichetta e spiegazione, o null se nessuno ha azioni riconoscibili */
+function identityOf(ids, L) {
   const here = ids.map((id) => state.sigs.find((x) => x.layer === L && x.id === id)).filter(Boolean);
+  if (!here.length) return null;
   const uniqueAll = here.every((x) => x.signed || isUniqueEvent(x));
-  const identity = !here.length ? null : here.every((x) => x.signed) ? 'Univoco' : uniqueAll ? 'Univoco · azione unica'
-    : here.some((x) => x.signed) ? 'In parte univoco' : 'Per azione';
+  if (here.every((x) => x.signed)) return { label: 'Univoco', hint: 'Riconosciuto in modo univoco (controllo + layer) grazie alla firma F13–F21.' };
+  if (uniqueAll) return { label: 'Univoco · azione unica', hint: 'La sua azione non compare altrove nel profilo: l\'evento identifica controllo e layer, e tenuto premuto si ripete.' };
+  if (here.some((x) => x.signed)) return { label: 'In parte univoco', hint: 'Riconosciuto in modo univoco (controllo + layer) grazie alla firma F13–F21.' };
+  return { label: 'Per azione', hint: 'Riconosciuto solo dall\'azione, che si ripete su altri controlli: si confonde. Lascia la firma su Automatica nel configuratore.' };
+}
+/* avvisi sulle azioni duplicate che coinvolgono i controlli selezionati */
+function duplicateNotes(dups, ids) {
   const notes = [];
   for (const g of dups) {
     if (!ids.some((id) => g.ids.has(id))) continue;
@@ -82,24 +84,32 @@ export function renderInspector() {
     notes.push(el('p', { class: 'note' }, el('b', {}, 'Azione duplicata'),
       (g.label || 'Questa azione') + ' è assegnata anche a ' + list.join(', ') + '. Il pad invia lo stesso messaggio, quindi la vista li accende insieme.'));
   }
+  return notes;
+}
+export function renderInspector() {
+  closeDropdowns();
+  if (!state.sel) { card.classList.remove('in'); card.hidden = true; $('#link path').setAttribute('d', ''); $('#link circle').setAttribute('cx', -10); return; }
+  if (state.edit) { renderEditor(); return; }
+  const L = shownLayer();
+  const { ids, kicker, title, body } = describeSelection(L);
+  const kinds = [...new Set(ids.map((id) => kindFor(id, L)).filter(Boolean))];
+  const identity = identityOf(ids, L);
+  const notes = duplicateNotes(dupGroups(L), ids);
   const close = el('button', { class: 'x', 'aria-label': 'Chiudi' }, '✕');
   close.addEventListener('click', () => select(state.sel));
+  const edit = el('button', { type: 'button', class: 'pbtn' }, 'Modifica');
+  edit.addEventListener('click', () => enterEdit());
   card.replaceChildren(
     el('header', {}, el('div', {}, el('span', { class: 'micro' }, kicker), el('h2', {}, title),
       el('div', { class: 'badges' }, el('span', { class: 'badge acc' }, 'Layer ' + L), ...kinds.map((k) => el('span', { class: 'badge' }, k)),
-        identity ? el('span', { class: 'badge', title: identity === 'Per azione' ? 'Riconosciuto solo dall\'azione, che si ripete su altri controlli: si confonde. Lascia la firma su Automatica nel configuratore.'
-        : identity === 'Univoco · azione unica' ? 'La sua azione non compare altrove nel profilo: l\'evento identifica controllo e layer, e tenuto premuto si ripete.'
-        : 'Riconosciuto in modo univoco (controllo + layer) grazie alla firma F13–F21.' }, identity) : null)), close),
+        identity ? el('span', { class: 'badge', title: identity.hint }, identity.label) : null)), close),
     el('div', { class: 'cscroll' }, ...body, ...notes),
-    el('div', { class: 'foot' }, el('span', { class: 'micro' }, 'Layer ' + L), (() => {
-      const b = el('button', { type: 'button', class: 'pbtn' }, 'Modifica');
-      b.addEventListener('click', () => enterEdit());
-      return b;
-    })()));
+    el('div', { class: 'foot' }, el('span', { class: 'micro' }, 'Layer ' + L), edit));
   card.hidden = false;
   placeInspector();
   requestAnimationFrame(() => card.classList.add('in'));
 }
+
 export function placeInspector() {
   if (!state.sel || card.hidden) return;
   const target = state.sel.kind === 'key' ? hotOf(ctrl.get(state.sel.id)) : knobEl[state.sel.k].querySelector('.n-hot');

@@ -11,7 +11,7 @@ export function encodeOptions(profile, layout) {
 }
 
 /* pacchetti di un controllo (senza "azzera"), in esadecimale e separati da "|" */
-export function controlHex(profile, opts, layer, id) {
+function controlHex(profile, opts, layer, id) {
   const a = profile.layers[layer - 1].controls[id] || null;
   return MP.encodeActionFrames(id, layer, a, opts).map((b) => MP.hex(b)).join('|');
 }
