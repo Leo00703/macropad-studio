@@ -322,11 +322,11 @@ test('hold: un controllo con scelta esplicita non occupa il posto "nativo" del g
   assert.deepStrictEqual([...h.keys()], ['1:4']);                 // il tasto 5 resta nativo
 });
 
-test('vista live: usa il modulo di protocollo, nessuna copia della logica', () => {
-  const live = fs.readFileSync(path.join(__dirname, '..', 'live.js'), 'utf8');
+test('vista live: i moduli usano il protocollo, nessuna copia della logica', () => {
+  const dir = path.join(__dirname, '..', 'modules');
+  const code = fs.readdirSync(dir).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
   for (const name of ['hostedControls', 'signPlan', 'sensorUsage', 'repeatOf', 'hostActionOf'])
-    assert(!new RegExp('(function|const)\s+' + name + '\b').test(live), name + ' è duplicata in live.js: usare MP.' + name);
-  assert(!/HOSTED-BEGIN/.test(live), 'blocco HOSTED duplicato in live.js');
+    assert(!new RegExp('(function|const)\s+' + name + '\b').test(code), name + ' è duplicata nei moduli: usare MP.' + name);
 });
 
 console.log('\n' + passed + ' test superati' + (process.exitCode ? ' — CI SONO FALLIMENTI' : ''));

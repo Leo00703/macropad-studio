@@ -1,0 +1,72 @@
+/* main.js — cablaggio: registra gli eventi della pagina (nell'ordine originale) e avvia l'app. */
+import { connectBridge, pageKey, pushHostmap, watchHid } from './bridge.js';
+import { rawLog, toggleDiag } from './diag.js';
+import { $, storage } from './dom.js';
+import { closeDropdowns, ddOpen } from './dropdown.js';
+import { E, recKey } from './editor.js';
+import { Bg, Glass } from './effects.js';
+import { card, placeInspector, select } from './inspector.js';
+import { hostedControls, sensorUsage } from './keymap.js';
+import { paintLabels } from './labels.js';
+import { openLeds } from './leds.js';
+import { buildPad, fitGrain } from './pad.js';
+import { load } from './profile.js';
+import { onEvent, wheel, wheelEvent } from './recognition.js';
+import { openSend } from './send.js';
+import { openSettings } from './settings.js';
+import { S, STORE, ctrl } from './state.js';
+import { updatePending } from './store.js';
+
+window.addEventListener('keydown', (e) => { if (E.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, true); } }, true);
+window.addEventListener('keyup', (e) => { if (E.rec) { e.preventDefault(); e.stopPropagation(); recKey(e, false); } }, true);
+
+window.addEventListener('pointerdown', (e) => { if (ddOpen.size && !e.target.closest('.dd-list, .dd-head')) closeDropdowns(); }, true);
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ddOpen.size) { e.stopPropagation(); closeDropdowns(); } }, true);
+window.addEventListener('resize', closeDropdowns);
+$('#stage').addEventListener('pointerdown', (e) => {
+  if (S.sel && !e.target.closest('.key, .knob')) select(S.sel);
+});
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const open = ['#send', '#leds', '#settings'].filter((id) => !$(id).hidden);
+    if (open.length) { open.forEach((id) => { $(id).hidden = true; }); return; }
+    if (S.sel) select(S.sel);
+    if (!$('#diag').hidden) toggleDiag(false);
+  }
+});
+window.addEventListener('resize', () => { placeInspector(); });
+
+$('#diagBtn').addEventListener('click', () => toggleDiag($('#diag').hidden));
+$('#rawCopy').addEventListener('click', () => {
+  const text = rawLog.slice().reverse().join('\n');
+  const b = $('#rawCopy');
+  try { navigator.clipboard.writeText(text); b.textContent = 'Copiato'; } catch (_) { b.textContent = 'Non riuscito'; }
+  setTimeout(() => { b.textContent = 'Copia'; }, 1500);
+});
+
+window.addEventListener('keydown', (e) => { if (!e.repeat) pageKey(e, true); });
+window.addEventListener('keyup', (e) => pageKey(e, false));
+window.addEventListener('wheel', (e) => { if (!S.bridge && !e.target.closest('#pad .knob')) wheelEvent(e.deltaY < 0 ? 1 : -1); }, { passive: true });
+window.addEventListener('storage', (e) => { if (e.key === STORE) { load(); buildPad(); pushHostmap(false); } });
+
+document.querySelectorAll('#layers button').forEach((b) => b.addEventListener('click', () => {
+  S.layerMode = b.dataset.l === 'auto' ? 'auto' : Number(b.dataset.l);
+  paintLabels();
+}));
+
+$('#settingsBtn').addEventListener('click', openSettings);
+$('#ledCard').addEventListener('click', openLeds);
+$('#ledCard').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLeds(); } });
+watchHid();
+$('#chipSend').addEventListener('click', openSend);
+$('#chipSend').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSend(); } });
+
+/* ---------- avvio ---------- */
+load();
+buildPad();
+connectBridge();
+updatePending(true);
+Glass.attach(card, 12, 18, 24);
+Glass.attach($('#diag'), 12, 16, 20);
+new ResizeObserver(() => { fitGrain(); Bg.size(); placeInspector(); }).observe($('#stage'));
+window.__live = { S, onEvent, ctrl, load, buildPad, paintLabels, select, hostedControls, sensorUsage };
