@@ -3,7 +3,7 @@ import { state } from '../core/state.js';
 import { linkState } from './bridge.js';
 import { $, btn, el } from './dom.js';
 import { closeDropdowns, dropdown } from './dropdown.js';
-import { segBtns } from './editor.js';
+import { segBtns } from './editor-widgets.js';
 import { section } from './inspector.js';
 import { shownLayer } from './labels.js';
 import { SEND, runSend } from './send.js';

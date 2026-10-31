@@ -3,10 +3,9 @@ import { MP } from '../core/mp.js';
 import { state } from '../core/state.js';
 import { btn, el } from './dom.js';
 import { dropdown } from './dropdown.js';
-import { TYPE_ICONS, svgIcon } from './icons.js';
+import { holdEditor, hostNote, mediaEditor, mouseEditor, segBtns, signEditor, typeTiles } from './editor-widgets.js';
 import { card, placeInspector, renderInspector, section, select } from './inspector.js';
 import { paintLabels, shownLayer } from './labels.js';
-import { pick } from './recognition.js';
 import { SEND, framesFor, openSend } from './send.js';
 import { commit, encOpts, ensureStore, layerControls } from './store.js';
 
@@ -15,15 +14,6 @@ import { commit, encOpts, ensureStore, layerControls } from './store.js';
    e le modifiche si inviano al pad via WebHID (USB) solo dopo conferma esplicita.
    Il modulo di protocollo (MP) è in protocol.js: funzioni pure, le stesse usate dai test e da tools/profile-frames.js. */
 export const editorState = { act: 1, rec: null, prevMode: null, mods: 0 };      // act: azione scelta di una manopola (0 ↺, 1 premi, 2 ↻); rec: { mods } se si registra; mods: modificatori del selettore manuale
-/* — editor nella scheda — */
-const MOUSE_CHOICES = [['Clic sx', { buttons: 1, wheel: 0 }], ['Clic centr.', { buttons: 4, wheel: 0 }], ['Clic dx', { buttons: 2, wheel: 0 }],
-  ['Rotella ↑', { buttons: 0, wheel: 1 }], ['Rotella ↓', { buttons: 0, wheel: -1 }]];
-const MODS = [[1, 'Ctrl'], [2, 'Maiusc'], [4, 'Alt']];
-export const segBtns = (items, isOn, pick, label) => {
-  const g = el('div', { class: 'eseg' + (items.length <= 3 ? ' g' + items.length : ''), role: 'group', 'aria-label': label || '' });
-  items.forEach(([k, text]) => g.append(btn(text, '', () => pick(k), { 'aria-pressed': String(isOn(k)) })));
-  return g;
-};
 const curTarget = () => (state.sel.kind === 'key' ? state.sel.id : state.layout.knobs[state.sel.k][editorState.act]);
 function setType(L, id, type) {
   stopRec(true);
@@ -102,89 +92,6 @@ function keysEditor(a, L, id) {
   if (state.store.profile.signature && a.steps.some((s) => s.key >= MP.SIG.BASE && s.key < MP.SIG.BASE + MP.SIG.RADIX))
     out.push(el('p', { class: 'hintx warnx' }, 'Usa già F13–F21: può confondersi con la firma.'));
   return out;
-}
-function mediaEditor(a) {
-  return [dropdown(Object.entries(MP.MEDIA).map(([u, name]) => [Number(u), name]), a.usage, (u) => { a.usage = u; commit(); }, 'Funzione multimediale')];
-}
-function mouseEditor(a) {
-  const click = a.wheel ? null : a.buttons & 4 ? 4 : a.buttons & 2 ? 2 : 1;
-  const wheel = a.wheel ? Math.sign(a.wheel) : 0;
-  const g = (cls, items, isOn, pick, label) => {
-    const seg = el('div', { class: 'eseg ' + cls, role: 'group', 'aria-label': label });
-    items.forEach(([k, text]) => seg.append(btn(text, '', () => pick(k), { 'aria-pressed': String(isOn(k)) })));
-    return seg;
-  };
-  const out = [
-    el('span', { class: 'sub' }, 'Clic'),
-    g('g3', [[1, 'Sinistro'], [4, 'Centrale'], [2, 'Destro']], (k) => click === k, (k) => { Object.assign(a, { buttons: k, wheel: 0, mod: 0 }); commit(); }, 'Clic del mouse'),
-    el('span', { class: 'sub' }, 'Rotella'),
-    g('g2', [[1, '↑ Su'], [-1, '↓ Giù']], (k) => wheel === k, (k) => { Object.assign(a, { buttons: 0, wheel: k }); commit(); }, 'Rotella del mouse'),
-  ];
-  if (a.wheel) {
-    const row = el('div', { class: 'eseg g3', role: 'group', 'aria-label': 'Modificatori' });
-    MODS.forEach(([bit, name]) => row.append(btn(name, '', () => { a.mod = (a.mod || 0) ^ bit; commit(); }, { 'aria-pressed': String(!!((a.mod || 0) & bit)) })));
-    out.push(el('span', { class: 'sub' }, 'Mentre tieni premuto'), row);
-  }
-  return out;
-}
-function typeTiles(cur, pick) {
-  const wrap = el('div', { class: 'types', role: 'group', 'aria-label': 'Tipo di azione' });
-  [['keys', 'Tastiera'], ['media', 'Media'], ['mouse', 'Mouse'], ['none', 'Nessuna']].forEach(([k, name]) => {
-    const b = btn('', 'type', () => pick(k), { 'aria-pressed': String(cur === k) });
-    const ic = el('span', {}, svgIcon(TYPE_ICONS[k]));
-    b.append(ic, el('span', {}, name));
-    wrap.append(b);
-  });
-  return wrap;
-}
-function signEditor(a, L, id) {
-  const p = state.store.profile;
-  if (!p.signature || !a || a.t !== 'keys') return null;
-  const o = encOpts();
-  const signedNow = !!(o.plan && o.plan.keys.has(L + ':' + id));
-  const mode = a.sign === 'on' || a.sign === 'off' ? a.sign : 'auto';
-  const set = (k) => { if (k === 'auto') delete a.sign; else a.sign = k; commit(); };
-  return section('Firma',
-    segBtns([['auto', 'Automatica'], ['on', 'Sempre'], ['off', 'Mai']], (k) => mode === k, set, 'Firma del controllo'),
-    el('p', { class: 'hintx' }, signedNow
-      ? 'Firmato: un tocco, riconosciuto sempre in modo univoco; non si ripete se tenuto premuto.'
-      : 'Normale: segue la pressione (tenuto, si ripete) e la vista lo riconosce dall’azione' + (mode === 'off' ? ' (se è duplicata si confonde con l’altro controllo).' : '.')));
-}
-/* "Tenuto premuto": ripeti il comando finché è premuto oppure una volta sola per pressione.
-   Tasti (una combinazione): Ripeti = tasto normale (ripetizione di Windows), Una volta = tocco (firma).
-   Media e rotella: il ponte vede pressione e rilascio, quindi può ripetere (Ripeti) o inviare una volta sola. */
-function holdEditor(a, L, id) {
-  if (!a || (a.t !== 'keys' && a.t !== 'media' && !(a.t === 'mouse' && a.wheel))) return null;
-  const single = a.t === 'keys' && a.steps.length === 1 && !a.delay;
-  if (a.t === 'keys' && !single) {
-    if (!a.steps.length) return null;
-    return section('Tenuto premuto', el('p', { class: 'hintx' }, 'Le macro con più tasti, o con una pausa, partono una volta sola per pressione.'));
-  }
-  const mode = a.hold === 'repeat' || a.hold === 'once' ? a.hold : 'auto';
-  const set = (k) => { if (k === 'auto') delete a.hold; else a.hold = k; commit(); };
-  const rp = MP.repeatOf(state.store.profile);
-  const o = encOpts();
-  const signedNow = !!(o.plan && o.plan.keys.has(L + ':' + id));
-  const needPc = 'Richiede il ponte attivo sul PC.';
-  let hint;
-  if (a.t === 'keys') {
-    hint = mode === 'repeat' ? 'Tenuto premuto si ripete, come su una tastiera (ripetizione di Windows).'
-      : mode === 'once' ? 'Un solo invio per pressione, anche se tieni premuto.'
-      : signedNow ? 'Tocco unico (l’azione è ripetuta su un altro controllo): non si ripete se tenuto.' : 'Tenuto premuto si ripete, come su una tastiera.';
-  } else {
-    const what = a.t === 'media' ? 'il comando' : 'lo scatto';
-    hint = mode === 'repeat' ? 'Il ponte ripete ' + what + ' finché tieni premuto (dopo ' + rp.d + ' ms, poi ogni ' + rp.r + ' ms). ' + needPc
-      : mode === 'once' ? 'Una sola volta per pressione, anche se tieni premuto. ' + needPc
-      : state.hosted.has(L + ':' + id) ? 'Una volta per pressione, eseguito dal ponte.' : 'Il pad invia una volta sola; un’eventuale ripetizione la gestisce Windows.';
-  }
-  return section('Tenuto premuto',
-    segBtns([['auto', 'Automatico'], ['repeat', 'Ripeti'], ['once', 'Una volta']], (k) => mode === k, set, 'Tenuto premuto'),
-    el('p', { class: 'hintx' }, hint));
-}
-function hostNote(a, L, id) {
-  if (!a || !state.hosted.has(L + ':' + id)) return null;
-  return el('p', { class: 'note' }, el('b', {}, 'Eseguita dal PC'),
-    'Questa azione compare su più controlli: il pad invia solo un codice identificativo e la esegue il ponte. Funziona con il ponte attivo, anche in Bluetooth.');
 }
 export function renderEditor() {
   const L = shownLayer();
