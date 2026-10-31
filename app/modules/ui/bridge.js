@@ -106,7 +106,12 @@ export function connectBridge() {
     pushHostmap(true);
   });
   es.onmessage = (m) => { const ev = parseJSON(m.data, 'evento del ponte non valido'); if (ev) onEvent(ev); };
-  es.onerror = () => { state.bridge = false; state.precise = false; state.hostCap = false; state.hostOk = null; state.linkCap = false; chips(); paintLink(); es.close(); setTimeout(connectBridge, 3000); };
+  es.onerror = () => {
+    Object.assign(state, { bridge: false, precise: false, hostCap: false, hostOk: null, linkCap: false });
+    chips(); paintLink();
+    es.close();
+    setTimeout(connectBridge, 3000);
+  };
 }
 export function pageKey(e, down) {
   if (editorState.rec) return;

@@ -67,6 +67,17 @@ export function openSettings() {
   $('#settings').hidden = false;
   renderSettings();
 }
+/* interruttori dell'identificazione: [chiave nel profilo, titolo, spiegazione, stato attuale, serve la firma attiva] */
+const SWITCHES = [
+  ['signature', 'Firma automatica',
+    'Aggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.', (p) => !!p.signature, false],
+  ['signAll', 'Firma tutti i controlli a tastiera',
+    'Più sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.', (p) => !!p.signAll, true],
+  ['hostActions', 'Media e mouse duplicati eseguiti dal PC',
+    'Uno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.', (p) => p.hostActions !== false, true],
+  ['signEmpty', 'Controlli senza azione',
+    'Inviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.', (p) => p.signEmpty !== false, true],
+];
 export function renderSettings() {
   const box = $('#settings');
   closeDropdowns();
@@ -93,11 +104,8 @@ export function renderSettings() {
   const kids = [el('div', { class: 'sh' }, el('span', { class: 'micro' }, 'Impostazioni'), closeBtn(() => { box.hidden = true; })),
     el('h3', {}, 'Identificazione dei controlli'),
     el('p', { class: 'lead' }, 'Come la vista live capisce quale controllo e quale layer stai usando.'),
-    el('div', { class: 'tgls' },
-      switchRow('Firma automatica', 'Aggiunge due tasti F13–F21 invisibili solo alle azioni che si ripetono su altri controlli. Funziona in USB.', sigOn, (v) => set('signature', v)),
-      switchRow('Firma tutti i controlli a tastiera', 'Più sicuro per la vista live, ma ogni tasto diventa un tocco: niente ripetizione se tenuto.', !!p.signAll, (v) => set('signAll', v), !sigOn),
-      switchRow('Media e mouse duplicati eseguiti dal PC', 'Uno resta nativo, gli altri inviano un codice identificativo e li esegue il ponte. Vale anche in Bluetooth.', p.hostActions !== false, (v) => set('hostActions', v), !sigOn),
-      switchRow('Controlli senza azione', 'Inviano solo un codice multimediale riservato, così premerli rivela il layer. Invisibile alle app.', p.signEmpty !== false, (v) => set('signEmpty', v), !sigOn)),
+    el('div', { class: 'tgls' }, ...SWITCHES.map(([key, title, hint, isOn, needsSignature]) =>
+      switchRow(title, hint, isOn(p), (v) => set(key, v), needsSignature && !sigOn))),
     el('p', { class: 'fine' }, c.total + ' azioni: ' + (parts.join(' · ') || 'nessuna') + '.'),
     section('Ripetizione a tasto tenuto',
       el('div', { class: 'numrow' },

@@ -66,7 +66,9 @@ export function renderLeds() {
     dropdown(LED_MODES.map(([v, name]) => [v, name]), cur.mode, (v) => setLedField(L, { mode: v }), 'Effetto LED', mode ? null : 'Modo ' + cur.mode),
     el('p', { class: 'desc' }, mode ? mode[2] : 'Valore non documentato (si comporta come “Tasto premuto”).')));
   const foot = [];
-  foot.push(el('p', { class: 'fine' }, 'Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.'));
+  foot.push(el('p', { class: 'fine' },
+    'Colore ed effetto valgono per tutto il layer: il pad non ha un colore per singolo LED. '
+    + 'In Bluetooth i LED dei tasti restano spenti; per cambiarli serve il cavo USB.'));
   if (SEND.busy && SEND.progress) foot.push(progressBar(SEND.progress));
   if (SEND.msg) foot.push(el('p', { class: 'hintx' + (SEND.err ? ' warnx' : '') }, (SEND.done && !SEND.err ? '✓ ' : '') + SEND.msg));
   if (st === 'ble') foot.push(el('p', { class: 'hintx warnx' }, 'Collegato solo in wireless: serve il cavo USB.'));

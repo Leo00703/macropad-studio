@@ -13,7 +13,9 @@ import { commit, encOpts, ensureStore, layerControls } from './store.js';
    Si modifica l'azione del controllo selezionato nel layer mostrato; il profilo è salvato nel browser (localStorage)
    e le modifiche si inviano al pad via WebHID (USB) solo dopo conferma esplicita.
    Il modulo di protocollo (MP) è in protocol.js: funzioni pure, le stesse usate dai test e da tools/profile-frames.js. */
-export const editorState = { act: 1, rec: null, prevMode: null, mods: 0 };      // act: azione scelta di una manopola (0 ↺, 1 premi, 2 ↻); rec: { mods } se si registra; mods: modificatori del selettore manuale
+/* act: azione scelta di una manopola (0 ↺, 1 premi, 2 ↻); rec: { mods } mentre si registra; prevMode: modalità del layer prima della modifica;
+   mods: modificatori del selettore manuale */
+export const editorState = { act: 1, rec: null, prevMode: null, mods: 0 };
 const curTarget = () => (state.sel.kind === 'key' ? state.sel.id : state.layout.knobs[state.sel.k][editorState.act]);
 function setType(L, id, type) {
   stopRec(true);
@@ -64,7 +66,12 @@ function keysEditor(a, L, id) {
   const cap = MP.LIMITS.steps - (signed ? MP.SIG.STEPS : 0);
   const text = el('input', { class: 'inp', type: 'text', placeholder: 'Scrivi un testo (lettere, cifre, spazio)', 'aria-label': 'Testo da aggiungere' });
   const addText = () => {
-    try { const add = MP.textToSteps(text.value); if (a.steps.length + add.length > MP.LIMITS.steps) throw new RangeError('Troppi tasti (massimo ' + MP.LIMITS.steps + ')'); a.steps.push(...add); commit(); }
+    try {
+      const add = MP.textToSteps(text.value);
+      if (a.steps.length + add.length > MP.LIMITS.steps) throw new RangeError('Troppi tasti (massimo ' + MP.LIMITS.steps + ')');
+      a.steps.push(...add);
+      commit();
+    }
     catch (err) { text.setCustomValidity(err.message); text.reportValidity(); setTimeout(() => text.setCustomValidity(''), 1800); }
   };
   text.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addText(); } });
