@@ -103,11 +103,12 @@
     return null;
   }
   const iconCap = (a) => (a && a.t === 'mouse' && a.wheel && a.mod ? modLabel(hidMask(a.mod)) : '');
-  const iconPathsHTML = (name) => (ICONS[name] || []).map(([k, d]) => '<path class="' + k + '" d="' + d + '"/>').join('');
+  /* icona SVG a partire da un elenco di forme [tag, attributi]: l'unico modo in cui si costruisce SVG (niente markup in stringhe) */
+  const svgIcon = (shapes) => h('svg', { viewBox: '0 0 24 24', focusable: 'false' }, shapes.map(([tag, attrs]) => h(tag, attrs)));
   /* icona come elemento HTML in linea (scheda, fogli) */
   function iconEl(name, cls) {
     const s = el('span', { class: 'vic' + (cls ? ' ' + cls : ''), 'aria-hidden': 'true' });
-    s.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">' + iconPathsHTML(name) + '</svg>';
+    s.append(svgIcon((ICONS[name] || []).map(([kind, d]) => ['path', { class: kind, d }])));
     return s;
   }
 
@@ -1266,16 +1267,16 @@
     return out;
   }
   const TYPE_ICONS = {
-    keys: '<svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M7 14h10"/></svg>',
-    media: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M10.2 8.8l5 3.2-5 3.2z"/></svg>',
-    mouse: '<svg viewBox="0 0 24 24"><rect x="6.5" y="3" width="11" height="18" rx="5.5"/><path d="M12 3v6.5"/></svg>',
-    none: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M6 18L18 6"/></svg>',
+    keys: [['rect', { x: 2.5, y: 6, width: 19, height: 12, rx: 3 }], ['path', { d: 'M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M7 14h10' }]],
+    media: [['circle', { cx: 12, cy: 12, r: 8.5 }], ['path', { d: 'M10.2 8.8l5 3.2-5 3.2z' }]],
+    mouse: [['rect', { x: 6.5, y: 3, width: 11, height: 18, rx: 5.5 }], ['path', { d: 'M12 3v6.5' }]],
+    none: [['circle', { cx: 12, cy: 12, r: 8.5 }], ['path', { d: 'M6 18L18 6' }]],
   };
   function typeTiles(cur, pick) {
     const wrap = el('div', { class: 'types', role: 'group', 'aria-label': 'Tipo di azione' });
     [['keys', 'Tastiera'], ['media', 'Media'], ['mouse', 'Mouse'], ['none', 'Nessuna']].forEach(([k, name]) => {
       const b = btn('', 'type', () => pick(k), { 'aria-pressed': String(cur === k) });
-      const ic = el('span', {}); ic.innerHTML = TYPE_ICONS[k];
+      const ic = el('span', {}, svgIcon(TYPE_ICONS[k]));
       b.append(ic, el('span', {}, name));
       wrap.append(b);
     });
