@@ -36,8 +36,9 @@ const chromePath = chromeCandidates.find((p) => fs.existsSync(p));
 if (!chromePath) { console.error('Chrome non trovato: imposta la variabile CHROME.'); process.exit(2); }
 const debugPort = 9222 + Math.floor(Math.random() * 500);
 const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'macropad-browser-test-'));
+const chromeFlags = process.env.CI ? ['--no-sandbox'] : []; // i runner di CI non permettono la sandbox di Chrome
 const chrome = spawn(chromePath, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=' + debugPort,
-  '--user-data-dir=' + profileDir, 'about:blank'], { stdio: 'ignore' });
+  '--user-data-dir=' + profileDir, ...chromeFlags, 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function cleanup(code) {
   chrome.kill(); server.close();

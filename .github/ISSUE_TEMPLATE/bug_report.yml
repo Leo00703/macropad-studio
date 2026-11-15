@@ -1,0 +1,62 @@
+name: Bug report
+description: Something in the app, the bridge or the tools does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. For a **different macropad model**, use the *Hardware report* form instead.
+        Never paste BLE addresses, serial numbers or other identifiers you want to keep private.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open live.html
+        2. Click key 3 → Edit
+        3. …
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options:
+        - Web app (live view / editor)
+        - Sending to the pad (WebHID)
+        - Bridge (PadBridge.ps1)
+        - CLI tools (PadWrite.ps1, profile-frames.js)
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS version, browser and version, how the pad was connected (USB / Bluetooth)
+      placeholder: Windows 11 23H2, Chrome 130, USB
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output / hex packets
+      description: Browser console (open the page with `?debug`) and, if relevant, the *technical details* panel of the control.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues
+          required: true
+        - label: This is not a security vulnerability (those go through the private Security tab)
+          required: true

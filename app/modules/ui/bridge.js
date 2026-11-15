@@ -94,7 +94,10 @@ export function chips() {
   if (!recents.length) renderRecents();
 }
 let es = null;
+/* la demo ospitata (HTTPS, altro dominio) non ha un ponte locale: non lo cerca, così il browser non chiede l'accesso alla rete locale */
+const LOCAL_PAGE = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 export function connectBridge() {
+  if (!LOCAL_PAGE) return;
   try { es = new EventSource(BRIDGE + '/events'); } catch (err) { warnOnce('EventSource non disponibile', err); setTimeout(connectBridge, 4000); return; }
   es.addEventListener('hello', (e) => {
     const d = parseJSON(e.data, 'messaggio hello del ponte illeggibile (ponte molto vecchio?)');

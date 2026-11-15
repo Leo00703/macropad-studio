@@ -1,0 +1,53 @@
+name: Hardware report
+description: Tell us whether Macropad Studio works with your macropad (any model of the same OEM family)
+labels: [hardware-test]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Only the `1189:8833` 9-key + 3-knob pad has been verified so far. Reports from other models are very valuable,
+        **including failures**. Start with read-only steps: opening the page and reading the device ID does not write anything.
+
+        ⚠️ **Sending to the pad overwrites its configuration and the pad cannot be read back.** Export your profile first and
+        only send if you accept losing the current one.
+  - type: input
+    id: ids
+    attributes:
+      label: USB vendor / product ID
+      description: Device Manager → Properties → Details → Hardware Ids (`VID_xxxx&PID_xxxx`), or `chrome://device-log` / the *Diagnostics* panel
+      placeholder: "1189:8840"
+    validations:
+      required: true
+  - type: textarea
+    id: device
+    attributes:
+      label: The device
+      description: Number of keys and knobs, board silkscreen text, where you bought it, Bluetooth yes/no, a photo link if you can
+    validations:
+      required: true
+  - type: dropdown
+    id: level
+    attributes:
+      label: How far did you get?
+      options:
+        - The page sees the pad (WebHID permission dialog lists it)
+        - Live view reacts to key presses
+        - I sent a profile and it was applied correctly
+        - I sent a profile and the pad behaved unexpectedly
+        - Nothing worked
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What you observed
+      description: Which controls worked, which did not, any differences from the documented frame format (hex packets help a lot)
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: Windows 11, Chrome 130, USB
+    validations:
+      required: true

@@ -2,27 +2,59 @@ name: tests
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+# Least privilege: the tests only read the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   protocol:
-    name: Protocol tests (Node)
+    name: Protocol tests (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 20
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
       - run: npm test
         working-directory: app
       - name: Profile → packets smoke test
         run: node tools/profile-frames.js app/profiles/diagnostico-layer1.json > /dev/null
 
+  browser:
+    name: Browser regression (headless Chrome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - run: npm run test:browser
+        working-directory: app
+        env:
+          CHROME: /usr/bin/google-chrome
+
   bridge:
     name: Bridge compiles (Windows PowerShell 5.1)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Parse all PowerShell scripts
         shell: powershell
         run: |

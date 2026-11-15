@@ -9,8 +9,10 @@ plus a small optional Windows bridge that tells the pad apart from your keyboard
 [![Tests](https://github.com/Leo00703/macropad-studio/actions/workflows/test.yml/badge.svg)](https://github.com/Leo00703/macropad-studio/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Dependencies: none](https://img.shields.io/badge/dependencies-none-lightgrey)
+![Browser: Chrome and Edge](https://img.shields.io/badge/browser-Chrome%20%7C%20Edge%20(WebHID)-4285F4)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[Italiano](README.it.md) · [Protocol](docs/PROTOCOL.md) · [Hardware](docs/HARDWARE.md) · [Dev log](docs/DEVELOPMENT-LOG.md)
+[**▶ Live demo**](https://leo00703.github.io/macropad-studio/live.html) · [Italiano](README.it.md) · [Protocol](docs/PROTOCOL.md) · [Hardware](docs/HARDWARE.md) · [Docs](docs/README.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 <img src="docs/images/live-view.png" alt="Macropad Studio live view: the pad drawn to scale with its keys, knobs and layer LEDs" width="860">
 
@@ -64,7 +66,16 @@ Other devices of the same OEM family (e.g. `1189:8840`, `1189:8842`, `1189:8890`
 <img src="docs/images/live-inspector.png" alt="Selecting a key opens its card with the action assigned on each layer" width="860">
 </div>
 
-## Quick start (Windows 10/11)
+## Quick start
+
+### Try it in 30 seconds (any OS, no install)
+
+Open the **[live demo](https://leo00703.github.io/macropad-studio/live.html)** in Chrome or Edge. Everything runs in your browser:
+nothing is uploaded, and the page only talks to the pad through WebHID after you grant permission. Plug the pad in with the
+USB cable to program it; without a pad you can still explore the editor and import the sample profile
+([`diagnostico-layer1.json`](app/profiles/diagnostico-layer1.json)).
+
+### Full experience: live events from the pad (Windows 10/11)
 
 Requirements: **Chrome or Edge** (WebHID), **Python 3** (static file server) and the macropad connected with the USB cable.
 The bridge uses Windows PowerShell 5.1, which ships with Windows. Node.js ≥ 18 is only needed to run the tests.
@@ -85,6 +96,16 @@ This opens three things: the event bridge window, a local web server on `127.0.0
 
 No bridge? Serve the `app/` folder with any static server (`python -m http.server 5173 --directory app`) and open
 `live.html`; you can still configure the pad, but the page cannot tell the pad's events from your keyboard's.
+
+## Compatibility
+
+| | Status |
+|---|---|
+| Macropad `1189:8833` (9 keys + 3 knobs), USB | ✅ Verified on hardware |
+| Same pad over Bluetooth LE | 👀 Live events only (via the bridge); the pad **cannot be programmed** over Bluetooth |
+| Other `1189:*` models (`8840`, `8842`, `8890`…) | ❓ Closely related protocol, **untested**: reports welcome ([#8](https://github.com/Leo00703/macropad-studio/issues/8)) |
+| Web app (view + configure over WebHID) | Chrome / Edge on Windows, macOS, Linux and ChromeOS. Firefox and Safari have no WebHID |
+| Per-device live events (bridge) | Windows 10/11 only; macOS and Linux versions are on the roadmap ([#1](https://github.com/Leo00703/macropad-studio/issues/1)) |
 
 ## How it works
 
@@ -118,6 +139,17 @@ flowchart LR
 * `tools/PadWrite.ps1` is a dry run unless you add `-Write -IUnderstand`.
 * This software is provided as is, without warranty (see [LICENSE](LICENSE)). It has been verified on **one** physical unit.
 
+## Troubleshooting
+
+| Symptom | Likely cause and fix |
+|---|---|
+| The page says WebHID is unavailable | Use Chrome or Edge on a desktop; open the page over `https://` or `http://localhost` |
+| The device picker is empty | The pad must be on **USB** (not only Bluetooth) and switched on; close any vendor software that holds the device |
+| *Connect and send* does nothing / fails | Check the USB cable carries data, then reconnect and retry; Linux may need a udev rule for `1189:8833` |
+| The dot next to **LIVE** is grey ("unknown state") | The bridge is not running (use `start.cmd`) or the page is not served from `localhost:5173` |
+| Two controls look the same in the live view | Expected when both emit the same event: turn on automatic signing in *Settings* and send again |
+| Something else | Open the page with `?debug`, copy the console output into a [bug report](https://github.com/Leo00703/macropad-studio/issues/new?template=bug_report.yml) |
+
 ## Repository layout
 
 | Path | What it is |
@@ -139,6 +171,13 @@ node tools/profile-frames.js app/profiles/diagnostico-layer1.json   # profile �
   the UI modules call it through the global `MP` and must not keep their own copy (a test guards this).
 * Pull requests that touch the protocol should include the hex packets and, when possible, what was observed on a real pad.
 * [`CLAUDE.md`](CLAUDE.md) holds short working notes for AI coding agents (and a map of the repo).
+
+## Contributing
+
+Contributions are welcome, and the most valuable one is a **test on another macropad model**: use the
+[hardware report](https://github.com/Leo00703/macropad-studio/issues/new?template=hardware_report.yml) form. Code, docs and translations
+are covered in [`CONTRIBUTING.md`](CONTRIBUTING.md); please read the [Code of Conduct](CODE_OF_CONDUCT.md) and report vulnerabilities
+privately as described in [`SECURITY.md`](SECURITY.md). Notable changes are listed in the [changelog](CHANGELOG.md).
 
 ## Roadmap
 
